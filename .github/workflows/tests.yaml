@@ -1,0 +1,50 @@
+name: "tests"
+on:
+  workflow_call:
+    secrets:
+      codecov_token:
+        required: true
+
+env:
+  PG_DB: hnhm
+  PG_USER: hnhm
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.PG_DB }}
+          POSTGRES_USER: ${{ env.PG_USER }}
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - run: poetry install
+
+      - run: poetry run pytest --cov=hnhm --cov-report xml --cov-report term tests/
+        env:
+          PG_DB: ${{ env.PG_DB }}
+          PG_USER: ${{ env.PG_USER }}
+
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.codecov_token }}
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true

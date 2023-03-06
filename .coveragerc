@@ -1,0 +1,10 @@
+[report]
+exclude_lines =
+    pass
+
+    raise NotImplementedError
+
+    def __repr__
+    def __str__
+    def __hash__
+    def __eq__

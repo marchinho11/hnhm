@@ -1,0 +1,12 @@
+.idea/
+
+dist/
+.pytest_cache/
+**/__pycache__/*
+
+.coverage
+htmlcov/
+
+.env
+
+state.json
