@@ -8,6 +8,7 @@
 
 * [Basic hNhM concepts](#basic-hnhm-concepts)
 * [Quick Start](#quick-start)
+* [DWH example](#dwh-example)
 * [Guide](#guide)
 
 ### Basic hNhM concepts
@@ -92,5 +93,8 @@ Applied!
 The physical result of applied changes:
 
 <img src="assets/quick_start_result.png" height="150px">
+
+## DWH example
+Full DWH example including Entities, Links and Flows can be found in the [`dwh/`](dwh/) directory.
 
 ## Guide
