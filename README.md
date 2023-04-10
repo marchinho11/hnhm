@@ -1,6 +1,6 @@
 # <img src="assets/logo.png" height="40px">
 [![codecov](https://codecov.io/gh/marchinho11/hnhm/branch/main/graph/badge.svg?token=PFB1111T2D)](https://codecov.io/gh/marchinho11/hnhm)
-[![Release](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml/badge.svg?branch=main)](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml)
+[![Release](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml/badge.svg?branch=main&event=push)](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 **hNhM**(highly Normalized hybrid Model) – data modeling methodology based on Anchor modeling and Data Vault. Implementation of this package is based on report **"How we implemented our data storage model — highly Normalized hybrid Model"** by Evgeny Ermakov and Nikolai Grebenshchikov. 

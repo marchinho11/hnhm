@@ -1,3 +1,4 @@
+import sys
 import importlib
 
 import click
@@ -19,6 +20,7 @@ from .core import (
 
 
 def import_registry(module: str) -> HnhmRegistry:
+    sys.path.append(".")
     imported_module = importlib.import_module(module)
     registry: HnhmRegistry = getattr(imported_module, "__registry__", None)
     if not registry:
