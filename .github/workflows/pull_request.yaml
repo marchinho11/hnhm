@@ -1,0 +1,15 @@
+name: "Pull request"
+
+on:
+  pull_request:
+    branches: [ "release/**" ]
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yaml
+
+  tests:
+    needs: [ lint ]
+    uses: ./.github/workflows/tests.yaml
+    secrets:
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
