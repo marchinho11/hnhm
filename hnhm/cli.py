@@ -16,6 +16,8 @@ from .core import (
     RemoveEntity,
     CreateAttribute,
     RemoveAttribute,
+    AddGroupAttribute,
+    RemoveGroupAttribute,
 )
 
 
@@ -69,6 +71,10 @@ def print_plan(plan: Plan):
                     for attribute in group.attributes.values():
                         click.secho(f"    |attribute '{attribute.name}'", fg="green")
 
+                case AddGroupAttribute(entity=_, group=group, attribute=attribute):
+                    click.secho(f"  [u] group '{group.name}'", fg="yellow")
+                    click.secho(f"    +attribute '{attribute.name}'", fg="green")
+
                 case RemoveEntity(entity=entity):
                     if entity.layout.type == LayoutType.HNHM:
                         click.secho(f"  - hub '{entity.name}'", fg="red")
@@ -84,6 +90,10 @@ def print_plan(plan: Plan):
                     click.secho(f"  - group '{group.name}'", fg="red")
                     for attribute in group.attributes.values():
                         click.secho(f"    | attribute '{attribute.name}'", fg="red")
+
+                case RemoveGroupAttribute(entity=_, group=group, attribute=attribute):
+                    click.secho(f"  [u] group '{group.name}'", fg="yellow")
+                    click.secho(f"    -attribute '{attribute.name}'", fg="red")
 
     for link_name, plan_collection in links_mutations:
         if plan_collection.type == PlanType.CREATE:

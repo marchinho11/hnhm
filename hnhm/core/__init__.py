@@ -17,4 +17,6 @@ from .mutations import (
     RemoveEntity,
     CreateAttribute,
     RemoveAttribute,
+    AddGroupAttribute,
+    RemoveGroupAttribute,
 )

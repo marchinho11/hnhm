@@ -43,6 +43,20 @@ def test_no_layout_type(hnhm):
         hnhm.plan(entities=[UserNoLayoutType()])
 
 
+def test_unknown_layout_type(hnhm):
+    class UserUnknownLayoutType(HnhmEntity):
+        """UserUnknownLayoutType."""
+
+        __layout__ = Layout(name="user", type=LayoutType.HNHM)
+
+    # Skip pydantic validation
+    hnhm_entity = UserUnknownLayoutType()
+    hnhm_entity.__layout__.type = "unknown"
+
+    with pytest.raises(HnhmError, match=f"Unknown LayoutType='unknown'"), hnhm:
+        hnhm.plan(entities=[hnhm_entity])
+
+
 def test_no_keys_with_hnhm_layout(hnhm):
     class UserNoKeys(HnhmEntity):
         """UserNoKeys."""

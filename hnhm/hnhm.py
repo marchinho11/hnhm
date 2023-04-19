@@ -17,6 +17,8 @@ from hnhm.core import (
     RemoveEntity,
     CreateAttribute,
     RemoveAttribute,
+    AddGroupAttribute,
+    RemoveGroupAttribute,
 )
 
 from .hnhm_link import HnhmLink
@@ -103,7 +105,7 @@ class HnHm:
                 mutations=mutations,
             )
 
-        # Entity: create/remove Attribute/Group
+        # Entity: create/remove/update Attribute/Group
         for entity in core_entities.values():
             if entity.name not in self.data.entities:
                 continue
@@ -125,9 +127,29 @@ class HnHm:
                 if attribute_name not in entity.attributes:
                     mutations.append(RemoveAttribute(entity=entity, attribute=attribute))
 
-            # Create Group
+            # Create/Update Group
             for group_name, group in entity.groups.items():
-                if group_name not in groups_state:
+                # Update
+                if group_name in groups_state:
+                    group_state = groups_state[group_name]
+                    # Add an Attribute to a Group
+                    for attribute_name, attribute in group.attributes.items():
+                        if attribute_name not in group_state.attributes:
+                            mutations.append(
+                                AddGroupAttribute(
+                                    entity=entity, group=group, attribute=attribute
+                                )
+                            )
+                    # Remove an Attribute from a Group
+                    for attribute_name, attribute in group_state.attributes.items():
+                        if attribute_name not in group.attributes:
+                            mutations.append(
+                                RemoveGroupAttribute(
+                                    entity=entity, group=group, attribute=attribute
+                                )
+                            )
+                # Create
+                else:
                     mutations.append(CreateGroup(entity=entity, group=group))
 
             # Remove Group
@@ -235,6 +257,36 @@ class HnHm:
                     assert group.name in self.data.entities[entity.name].groups
                     self.sql.execute(sql)
                     del self.data.entities[entity.name].groups[group.name]
+
+                case AddGroupAttribute(entity=entity, group=group, attribute=attribute):
+                    assert entity.name in self.data.entities
+                    assert group.name in self.data.entities[entity.name].groups
+                    assert (
+                        attribute.name
+                        not in self.data.entities[entity.name]
+                        .groups[group.name]
+                        .attributes
+                    )
+                    self.sql.execute(sql)
+                    self.data.entities[entity.name].groups[group.name].attributes[
+                        attribute.name
+                    ] = attribute
+
+                case RemoveGroupAttribute(
+                    entity=entity, group=group, attribute=attribute
+                ):
+                    assert entity.name in self.data.entities
+                    assert group.name in self.data.entities[entity.name].groups
+                    assert (
+                        attribute.name
+                        in self.data.entities[entity.name].groups[group.name].attributes
+                    )
+                    self.sql.execute(sql)
+                    del (
+                        self.data.entities[entity.name]
+                        .groups[group.name]
+                        .attributes[attribute.name]
+                    )
 
                 case CreateLink(link=link):
                     assert link.name not in self.data.links
