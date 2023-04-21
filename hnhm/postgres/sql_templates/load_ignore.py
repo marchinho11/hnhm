@@ -20,14 +20,18 @@ INSERT INTO {{ target_table }}(
     {% for target_attribute in target_attributes -%}
     {{ target_attribute }},
     {% endfor -%}
-    valid_from
+    valid_from,
+    _source,
+    _loaded_at
 )
 SELECT
     d.sk,
     {% for source_attribute in source_attributes -%}
         d.{{ source_attribute }},
     {% endfor -%}
-    d.valid_from
+    d.valid_from,
+    '{{ source_table }}',
+    CURRENT_TIMESTAMP
 FROM
     data d
 LEFT OUTER JOIN

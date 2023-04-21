@@ -55,6 +55,13 @@ def test_hub_only(hnhm, sqlalchemy_engine):
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[UserHubOnly()]))
     assert get_tables_in_database(sqlalchemy_engine) == {"hub__user"}
+    assert get_column_names_for_table(sqlalchemy_engine, "hub__user") == {
+        "user_sk",
+        "user_id_bk",
+        "valid_from",
+        "_source",
+        "_loaded_at",
+    }
 
     # Cleanup
     with hnhm:
@@ -72,6 +79,13 @@ def test_with_attribute(hnhm, sqlalchemy_engine):
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[UserWithAttr()]))
     assert get_tables_in_database(sqlalchemy_engine) == {"hub__user", "attr__user__name"}
+    assert get_column_names_for_table(sqlalchemy_engine, "attr__user__name") == {
+        "user_sk",
+        "name",
+        "valid_from",
+        "_source",
+        "_loaded_at",
+    }
 
     # Cleanup
     with hnhm:
@@ -115,6 +129,14 @@ def test_with_group(hnhm, sqlalchemy_engine):
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[UserWithGroup()]))
     assert get_tables_in_database(sqlalchemy_engine) == {"hub__user", "group__user__name"}
+    assert get_column_names_for_table(sqlalchemy_engine, "group__user__name") == {
+        "user_sk",
+        "first_name",
+        "last_name",
+        "valid_from",
+        "_source",
+        "_loaded_at",
+    }
 
     # Cleanup
     with hnhm:
@@ -197,6 +219,8 @@ def test_group_add_remove_attribute(hnhm, sqlalchemy_engine):
         "user_sk",
         "first_name",
         "valid_from",
+        "_source",
+        "_loaded_at",
     }
 
     # Add an Attribute to a Group
@@ -217,6 +241,8 @@ def test_group_add_remove_attribute(hnhm, sqlalchemy_engine):
         "first_name",
         "last_name",
         "valid_from",
+        "_source",
+        "_loaded_at",
     }
 
     # Remove an Attribute from a Group
@@ -233,6 +259,8 @@ def test_group_add_remove_attribute(hnhm, sqlalchemy_engine):
         "user_sk",
         "last_name",
         "valid_from",
+        "_source",
+        "_loaded_at",
     }
 
     # Remove Group

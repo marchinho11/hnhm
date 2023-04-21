@@ -20,6 +20,7 @@ def test_ignore(hnhm, sqlalchemy_engine):
         "user_sk": [md5("user-id-0")],
         "name": ["Mark Alonso"],
         "valid_from": [TIME],
+        "_source": ["stg__stage"],
     }
     init_dwh(
         hnhm=hnhm,
@@ -69,6 +70,7 @@ def test_update(hnhm, sqlalchemy_engine):
         "user_sk": [md5("user-id-0")],
         "name": ["Mark Alonso"],
         "valid_from": [TIME],
+        "_source": ["stg__stage"],
     }
     init_dwh(
         hnhm=hnhm,
@@ -100,6 +102,7 @@ def test_update(hnhm, sqlalchemy_engine):
         "user_sk": [md5("user-id-0")],
         "name": ["John Wick"],
         "valid_from": [TIME + timedelta(hours=1)],
+        "_source": ["stg__stage"],
     }
     init_dwh(hnhm=hnhm, engine=sqlalchemy_engine, stage_data={"stg__stage": stage_data})
     for task in flow.tasks:
@@ -125,6 +128,7 @@ def test_new(hnhm, sqlalchemy_engine):
         "name": ["Mark Alonso", "John Wick"],
         "valid_from": [TIME, TIME + timedelta(hours=10)],
         "valid_to": [TIME + timedelta(hours=10), TIME_INFINITY],
+        "_source": ["stg__stage", "stg__stage"],
     }
     init_dwh(
         hnhm=hnhm,
@@ -176,6 +180,11 @@ def test_new(hnhm, sqlalchemy_engine):
             TIME + timedelta(hours=5),
             TIME + timedelta(hours=10),
             TIME_INFINITY,
+        ],
+        "_source": [
+            "stg__stage",
+            "stg__stage",
+            "stg__stage",
         ],
     }
     init_dwh(hnhm=hnhm, engine=sqlalchemy_engine, stage_data={"stg__stage": stage_data})

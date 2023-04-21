@@ -348,7 +348,14 @@ class PostgresSqlalchemySql(Sql):
         if debug:
             print(dedent(sql).strip())
 
-        with self.engine.connect() as conn:
+        conn = None
+        try:
+            conn = self.engine.connect()
             conn.execute(text(sql))
             conn.commit()
-        self.engine.dispose()
+        except Exception as e:
+            raise e
+        finally:
+            if conn:
+                conn.close()
+            self.engine.dispose()
