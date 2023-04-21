@@ -5,6 +5,8 @@ CREATE TABLE link__{{ name }}(
     {% endfor -%}
     valid_from TIMESTAMPTZ NOT NULL,
     valid_to TIMESTAMPTZ,
+    _source VARCHAR(512) NOT NULL,
+    _loaded_at TIMESTAMPTZ NOT NULL,
 
     {% for entity in entities -%}
         CONSTRAINT fk_{{ entity }}_sk

@@ -39,6 +39,7 @@ def test_load(hnhm, sqlalchemy_engine, Link):
         "user_sk": [md5("user-id-0")],
         "valid_from": [TIME],
         "valid_to": [TIME_INFINITY],
+        "_source": ["stg__stage"],
     }
     init_dwh(
         hnhm=hnhm,
@@ -77,6 +78,7 @@ def test_load(hnhm, sqlalchemy_engine, Link):
         "user_sk": [md5("user-id-0"), md5("user-id-0")],
         "valid_from": [TIME, TIME + timedelta(hours=100)],
         "valid_to": [TIME + timedelta(hours=100), TIME_INFINITY],
+        "_source": ["stg__stage", "stg__stage"],
     }
     init_dwh(
         hnhm=hnhm,

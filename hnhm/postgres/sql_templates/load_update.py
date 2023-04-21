@@ -14,7 +14,9 @@ SELECT
     ROW_NUMBER() OVER (
         PARTITION BY {{ source_sk }}
         ORDER BY     {{ business_time_field }} DESC
-    ) AS row_number
+    ) AS row_number,
+    '{{ source_table }}' AS _source,
+    CURRENT_TIMESTAMP AS _loaded_at 
 FROM
     {{ source_table }};
 
@@ -26,7 +28,9 @@ INSERT INTO {{ target_table }}(
         {{ target_attribute }},
     {% endfor -%}
 
-    valid_from
+    valid_from,
+    _source,
+    _loaded_at
 )
 SELECT
     d.sk,
@@ -35,7 +39,9 @@ SELECT
         d.{{ source_attribute }},
     {% endfor -%}
 
-    d.valid_from
+    d.valid_from,
+    d._source,
+    d._loaded_at
 FROM
     tmp__{{ target_table }}__load__update d
 LEFT OUTER JOIN
@@ -52,7 +58,9 @@ WITH updates AS (
         {% for source_attribute in source_attributes -%}
             d.{{ source_attribute }},
         {% endfor -%}
-        d.valid_from
+        d.valid_from,
+        d._source,
+        d._loaded_at
     FROM
         tmp__{{ target_table }}__load__update d
     INNER JOIN
@@ -71,7 +79,9 @@ SET
     {% for source_attribute, target_attribute in zip(source_attributes, target_attributes) -%}
         {{ target_attribute }} = u.{{ source_attribute }},
     {% endfor -%}
-    valid_from = u.valid_from
+    valid_from = u.valid_from,
+    _source = u._source,
+    _loaded_at = u._loaded_at
 FROM
     updates u
 WHERE

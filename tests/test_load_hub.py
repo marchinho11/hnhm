@@ -12,6 +12,7 @@ def test_single_pk(hnhm, sqlalchemy_engine):
         "user_sk": [md5("user-id-0")],
         "user_id_bk": ["user-id-0"],
         "valid_from": [TIME],
+        "_source": ["stg__stage"],
     }
     init_dwh(
         hnhm=hnhm,
@@ -50,6 +51,7 @@ def test_composite_pk(hnhm, sqlalchemy_engine):
         "user_id_bk": ["user-id-0"],
         "user_name_bk": ["Mark Alonso"],
         "valid_from": [TIME],
+        "_source": ["stg__stage"],
     }
     init_dwh(
         hnhm=hnhm,

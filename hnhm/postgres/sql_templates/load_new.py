@@ -77,7 +77,9 @@ SELECT
     CASE
         WHEN d2.valid_from IS NULL THEN 'infinity'
         ELSE d2.valid_from
-    END AS valid_to
+    END AS valid_to,
+    '{{ source_table }}' AS _source,
+    CURRENT_TIMESTAMP AS _loaded_at
 FROM
     data d1
 LEFT JOIN
@@ -100,7 +102,9 @@ WITH inserts AS (
         {% endfor -%}
 
         tmp.valid_from,
-        tmp.valid_to
+        tmp.valid_to,
+        tmp._source,
+        tmp._loaded_at
     FROM
         _tmp__{{ target_table }}__load__new tmp
     LEFT OUTER JOIN
@@ -128,7 +132,9 @@ INSERT INTO {{ target_table }}(
         {{ target_attribute }},
     {% endfor -%}
     valid_from,
-    valid_to
+    valid_to,
+    _source,
+    _loaded_at
 )
 SELECT
     {{ target_sks | join(', ') }},
@@ -136,7 +142,9 @@ SELECT
         {{ target_attribute }},
     {% endfor -%}
     valid_from,
-    valid_to
+    valid_to,
+    _source,
+    _loaded_at
 FROM
     inserts;
 
@@ -144,7 +152,9 @@ FROM
 UPDATE {{ target_table }} t
 SET
     valid_from = tmp.valid_from,
-    valid_to = tmp.valid_to
+    valid_to = tmp.valid_to,
+    _source = tmp._source,
+    _loaded_at = tmp._loaded_at
 FROM
     _tmp__{{ target_table }}__load__new tmp
 WHERE

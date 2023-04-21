@@ -1,5 +1,5 @@
-from tests.util import get_tables_in_database
 from tests.dwh import User, Review, UserReview
+from tests.util import get_tables_in_database, get_column_names_for_table
 
 
 def test_create(hnhm, sqlalchemy_engine):
@@ -10,6 +10,14 @@ def test_create(hnhm, sqlalchemy_engine):
         "hub__user",
         "hub__review",
         "link__user_review",
+    }
+    assert get_column_names_for_table(sqlalchemy_engine, "link__user_review") == {
+        "user_sk",
+        "review_sk",
+        "valid_from",
+        "valid_to",
+        "_source",
+        "_loaded_at",
     }
 
     # Cleanup

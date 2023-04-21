@@ -20,10 +20,18 @@ def insert_data(data: dict, table: str, engine: Engine):
     engine.dispose()
 
 
-def get_data(table: str, engine: Engine, sort_by: list[str] | None = None) -> dict:
+def get_data(
+    table: str,
+    engine: Engine,
+    sort_by: list[str] | None = None,
+    exclude_columns: tuple[str] | None = ("_loaded_at",),
+) -> dict:
     df = pd.read_sql_query(f"SELECT * FROM {table}", con=engine)
     if sort_by:
         df = df.sort_values(sort_by)
+    if exclude_columns:
+        columns = set(df.columns) - set(exclude_columns)
+        df = df[list(columns)]
     engine.dispose()
     return df.to_dict(orient="list")
 
