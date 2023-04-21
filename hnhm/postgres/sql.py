@@ -23,6 +23,8 @@ from hnhm.core import (
     LoadAttribute,
     CreateAttribute,
     RemoveAttribute,
+    AddGroupAttribute,
+    RemoveGroupAttribute,
 )
 
 from .sql_templates import (
@@ -106,6 +108,10 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
                 time_columns=time_columns,
             )
 
+        case AddGroupAttribute(entity=entity, group=group, attribute=attribute):
+            attribute_type = PG_TYPES[attribute.type]
+            return f"ALTER TABLE group__{entity.name}__{group.name} ADD COLUMN {attribute.name} {attribute_type}"
+
         case CreateLink(link=link):
             entities = []
             for link_element in link.elements:
@@ -134,6 +140,9 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
 
         case RemoveGroup(entity=entity, group=group):
             return f"DROP TABLE group__{entity.name}__{group.name}"
+
+        case RemoveGroupAttribute(entity=entity, group=group, attribute=attribute):
+            return f"ALTER TABLE group__{entity.name}__{group.name} DROP COLUMN {attribute.name}"
 
         case RemoveLink(link=link):
             return f"DROP TABLE link__{link.name}"
