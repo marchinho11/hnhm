@@ -1,6 +1,8 @@
+import pytest
+
 from tests.dwh import User, Stage
-from hnhm import String, Integer, ChangeType
 from tests.util import get_tables_in_database, get_column_names_for_table
+from hnhm import Layout, String, Integer, HnhmError, ChangeType, HnhmEntity, LayoutType
 
 
 def test_stage(hnhm, sqlalchemy_engine):
@@ -15,9 +17,7 @@ def test_stage(hnhm, sqlalchemy_engine):
     assert not get_tables_in_database(sqlalchemy_engine)
 
 
-def test_ignore_add_attribute_to_stage(hnhm, sqlalchemy_engine):
-    """This is in backlog: add/remove a column from a stage table."""
-
+def test_stage_add_attribute(hnhm, sqlalchemy_engine):
     # Create
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[Stage()]))
@@ -44,7 +44,45 @@ def test_ignore_add_attribute_to_stage(hnhm, sqlalchemy_engine):
         "name",
         "age",
         "time",
+        "new_id",
     }
+
+
+def test_stage_remove_attribute(hnhm, sqlalchemy_engine):
+    # Create
+    with hnhm:
+        hnhm.apply(hnhm.plan(entities=[Stage()]))
+    assert get_tables_in_database(sqlalchemy_engine) == {"stg__stage"}
+    assert get_column_names_for_table(sqlalchemy_engine, "stg__stage") == {
+        "user_id",
+        "review_id",
+        "name",
+        "age",
+        "time",
+    }
+
+    # Remove attributes
+    class StageOneAttribute(HnhmEntity):
+        """StageOneAttribute."""
+
+        __layout__ = Layout(name="stage", type=LayoutType.STAGE)
+
+        user_id = String(comment="User ID", change_type=ChangeType.IGNORE)
+
+    with hnhm:
+        hnhm.apply(hnhm.plan(entities=[StageOneAttribute()]))
+    assert get_column_names_for_table(sqlalchemy_engine, "stg__stage") == {"user_id"}
+
+    # Remove all attributes
+    class StageNoAttributes(HnhmEntity):
+        """StageNoAttributes."""
+
+        __layout__ = Layout(name="stage", type=LayoutType.STAGE)
+
+    with pytest.raises(
+        HnhmError, match="Entity='STAGE.stage' should have at least 1 attribute."
+    ), hnhm:
+        hnhm.apply(hnhm.plan(entities=[StageNoAttributes()]))
 
 
 def test_hub_only(hnhm, sqlalchemy_engine):

@@ -110,9 +110,6 @@ class HnHm:
             if entity.name not in self.data.entities:
                 continue
 
-            if entity.layout.type != LayoutType.HNHM:
-                continue
-
             attributes_state = self.data.entities[entity.name].attributes
             groups_state = self.data.entities[entity.name].groups
 
