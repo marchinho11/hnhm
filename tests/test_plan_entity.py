@@ -12,7 +12,7 @@ def test_no_doc(hnhm):
     with hnhm, pytest.raises(
         HnhmError,
         match=(
-            "Doc not found or empty for entity: 'user'."
+            "Doc not found or empty for entity: 'HNHM.user'."
             " Please, write a documentation for your entity."
         ),
     ):
@@ -41,6 +41,20 @@ def test_no_layout_type(hnhm):
         ),
     ), hnhm:
         hnhm.plan(entities=[UserNoLayoutType()])
+
+
+def test_unknown_layout_type(hnhm):
+    class UserUnknownLayoutType(HnhmEntity):
+        """UserUnknownLayoutType."""
+
+        __layout__ = Layout(name="user", type=LayoutType.HNHM)
+
+    # Skip pydantic validation
+    hnhm_entity = UserUnknownLayoutType()
+    hnhm_entity.__layout__.type = "unknown"
+
+    with pytest.raises(HnhmError, match="Unknown LayoutType='unknown'"), hnhm:
+        hnhm.plan(entities=[hnhm_entity])
 
 
 def test_no_keys_with_hnhm_layout(hnhm):
@@ -80,7 +94,7 @@ def test_different_group_change_types(hnhm):
     with pytest.raises(
         HnhmError,
         match=(
-            "Found conflicting ChangeType for the entity='user' group ='user_data'."
+            "Found conflicting ChangeType for the entity='HNHM.user' group='user_data'."
             " Please, use single ChangeType for all attributes within the same group."
         ),
     ), hnhm:
@@ -129,3 +143,15 @@ def test_with_group(hnhm):
     assert len(mutations) == 2
     assert isinstance(mutations[0], CreateEntity)
     assert isinstance(mutations[1], CreateGroup)
+
+
+def test_stage_at_least_one_attribute(hnhm):
+    class StageNoAttributes(HnhmEntity):
+        """StageNoAttributes."""
+
+        __layout__ = Layout(name="stage", type=LayoutType.STAGE)
+
+    with pytest.raises(
+        HnhmError, match="Entity='STAGE.stage' should have at least 1 attribute."
+    ), hnhm:
+        hnhm.plan(entities=[StageNoAttributes()])

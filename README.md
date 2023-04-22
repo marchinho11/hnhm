@@ -91,8 +91,19 @@ Applied!
 ```
 
 The physical result of applied changes:
-
-<img src="assets/quick_start_result.png" height="150px">
+```
+┌───────────────────┐   ┌────────────────┐   ┌─────────────────┐
+│ group__user__name │   │ hub__user      │   │ attr__user__age │
+│                   │   │                │   │                 │
+│ + user_sk (FK)    ├──►│ + user_sk (PK) │◄──┤ + user_sk (FK)  │
+│ + first_name      │   │ + user_id_bk   │   │ + age           │
+│ + last_name       │   │ + valid_from   │   │ + valid_from    │
+│ + valid_from      │   │ + _source      │   │ + _source       │
+│ + valid_to        │   │ + _loaded_at   │   │ + _loaded_at    │
+│ + _source         │   └────────────────┘   └─────────────────┘
+│ + _loaded_at      │
+└───────────────────┘
+```
 
 ## DWH example
 Full DWH example including Entities, Links and Flows can be found in the [`dwh/`](dwh/) directory.

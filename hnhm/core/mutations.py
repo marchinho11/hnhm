@@ -65,6 +65,38 @@ class RemoveGroup(Mutation):
         return f"<RemoveGroup '{self.group.name}' entity='{self.entity.name}'>"
 
 
+class AddGroupAttribute(Mutation):
+    """Add an Attribute to an existing Group."""
+
+    priority = Priority.SECOND
+    entity: Entity
+    group: Group
+    attribute: Attribute
+
+    def __str__(self):
+        return (
+            f"<AddGroupAttribute '{self.group.name}'"
+            f" entity='{self.entity.name}'"
+            f" attribute='{self.attribute.name}'>"
+        )
+
+
+class RemoveGroupAttribute(Mutation):
+    """Remove an Attribute from an existing Group."""
+
+    priority = Priority.SECOND
+    entity: Entity
+    group: Group
+    attribute: Attribute
+
+    def __str__(self):
+        return (
+            f"<RemoveGroupAttribute '{self.group.name}'"
+            f" entity='{self.entity.name}'"
+            f" attribute='{self.attribute.name}'>"
+        )
+
+
 class CreateLink(Mutation):
     priority = Priority.SECOND
     link: Link

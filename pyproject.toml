@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hnhm"
-version = "0.0.4"
+version = "0.0.5"
 description = "hNhM – highly Normalized hybrid Model."
 authors = ["Arseny Egorov <egoroff-ars@yandex.ru>"]
 
@@ -14,7 +14,7 @@ psycopg2-binary = "2.9.6"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "3.2.2"
-pytest = "7.3.0"
+pytest = "7.3.1"
 pytest-cov = "4.0.0"
 pygount = "1.5.1"
 pandas = "2.0.0"

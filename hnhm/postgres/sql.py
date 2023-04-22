@@ -23,6 +23,8 @@ from hnhm.core import (
     LoadAttribute,
     CreateAttribute,
     RemoveAttribute,
+    AddGroupAttribute,
+    RemoveGroupAttribute,
 )
 
 from .sql_templates import (
@@ -76,6 +78,9 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
         case CreateAttribute(entity=entity, attribute=attribute):
             attribute_type = PG_TYPES[attribute.type]
 
+            if entity.layout.type == LayoutType.STAGE:
+                return f"ALTER TABLE stg__{entity.name} ADD COLUMN {attribute.name} {attribute_type}"
+
             time_columns = ["valid_from TIMESTAMPTZ NOT NULL"]
             if attribute.change_type == ChangeType.NEW:
                 time_columns.append("valid_to TIMESTAMPTZ")
@@ -106,6 +111,10 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
                 time_columns=time_columns,
             )
 
+        case AddGroupAttribute(entity=entity, group=group, attribute=attribute):
+            attribute_type = PG_TYPES[attribute.type]
+            return f"ALTER TABLE group__{entity.name}__{group.name} ADD COLUMN {attribute.name} {attribute_type}"
+
         case CreateLink(link=link):
             entities = []
             for link_element in link.elements:
@@ -130,10 +139,16 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
             return f"DROP TABLE {table_name}"
 
         case RemoveAttribute(entity=entity, attribute=attribute):
+            if entity.layout.type == LayoutType.STAGE:
+                return f"ALTER TABLE stg__{entity.name} DROP COLUMN {attribute.name}"
+
             return f"DROP TABLE attr__{entity.name}__{attribute.name}"
 
         case RemoveGroup(entity=entity, group=group):
             return f"DROP TABLE group__{entity.name}__{group.name}"
+
+        case RemoveGroupAttribute(entity=entity, group=group, attribute=attribute):
+            return f"ALTER TABLE group__{entity.name}__{group.name} DROP COLUMN {attribute.name}"
 
         case RemoveLink(link=link):
             return f"DROP TABLE link__{link.name}"
@@ -339,7 +354,14 @@ class PostgresSqlalchemySql(Sql):
         if debug:
             print(dedent(sql).strip())
 
-        with self.engine.connect() as conn:
+        conn = None
+        try:
+            conn = self.engine.connect()
             conn.execute(text(sql))
             conn.commit()
-        self.engine.dispose()
+        except Exception as e:
+            raise e
+        finally:
+            if conn:
+                conn.close()
+            self.engine.dispose()
