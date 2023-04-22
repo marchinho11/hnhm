@@ -78,6 +78,9 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
         case CreateAttribute(entity=entity, attribute=attribute):
             attribute_type = PG_TYPES[attribute.type]
 
+            if entity.layout.type == LayoutType.STAGE:
+                return f"ALTER TABLE stg__{entity.name} ADD COLUMN {attribute.name} {attribute_type}"
+
             time_columns = ["valid_from TIMESTAMPTZ NOT NULL"]
             if attribute.change_type == ChangeType.NEW:
                 time_columns.append("valid_to TIMESTAMPTZ")
@@ -136,6 +139,9 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
             return f"DROP TABLE {table_name}"
 
         case RemoveAttribute(entity=entity, attribute=attribute):
+            if entity.layout.type == LayoutType.STAGE:
+                return f"ALTER TABLE stg__{entity.name} DROP COLUMN {attribute.name}"
+
             return f"DROP TABLE attr__{entity.name}__{attribute.name}"
 
         case RemoveGroup(entity=entity, group=group):
