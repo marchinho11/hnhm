@@ -37,7 +37,7 @@ jobs:
           cache: "poetry"
       - run: poetry install
 
-      - run: poetry run pytest --cov=hnhm --cov-report xml --cov-report term tests/
+      - run: poetry run pytest -v --cov=hnhm --cov-report xml --cov-report term tests/
         env:
           PG_DB: ${{ env.PG_DB }}
           PG_USER: ${{ env.PG_USER }}
