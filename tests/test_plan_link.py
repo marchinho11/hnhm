@@ -103,4 +103,4 @@ def test_with_elements(hnhm):
     with hnhm:
         plan = hnhm.plan(links=[UserReview()])
 
-    assert len(plan.mutations_all) == 1
+    assert len(plan.migrations_all) == 1

@@ -35,7 +35,7 @@ class HnhmLink(abc.ABC):
     def to_core(self) -> Link:
         inspected = dict(inspect.getmembers(self))
 
-        if "__layout__" not in inspected or not inspected["__layout__"]:
+        if not inspected.get("__layout__"):
             raise HnhmError(
                 f"Layout not found for link: '{self}'."
                 " Please, specify Layout via '__layout__' attribute."
@@ -44,14 +44,14 @@ class HnhmLink(abc.ABC):
 
         name = layout.name
 
-        if "__doc__" not in inspected or not inspected["__doc__"]:
+        if not inspected.get("__doc__"):
             raise HnhmError(
                 f"Doc not found or empty for link: '{name}'."
                 " Please, write a documentation for your link."
             )
         doc: str = inspected["__doc__"]
 
-        if "__keys__" not in inspected or not inspected["__keys__"]:
+        if not inspected.get("__keys__"):
             raise HnhmError(
                 f"At least one Key is required for link='{name}'."
                 " Please, specify link's keys via the '__keys__' attribute."

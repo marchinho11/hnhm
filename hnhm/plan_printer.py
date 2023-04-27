@@ -37,11 +37,11 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
         lines.append(PlanLine(text="Your DWH is up to date.", color=Color.green))
         return lines
 
-    entities_mutations = sorted(plan.entities_mutations.items(), key=lambda kv: kv[0])
-    links_mutations = sorted(plan.links_mutations.items(), key=lambda kv: kv[0])
+    entities_migrations = sorted(plan.entities_migrations.items(), key=lambda kv: kv[0])
+    links_migrations = sorted(plan.links_migrations.items(), key=lambda kv: kv[0])
 
     lines.append(PlanLine(text="Plan:"))
-    for entity_name, plan_collection in entities_mutations:
+    for entity_name, plan_collection in entities_migrations:
         if plan_collection.type == PlanType.CREATE:
             symbol, color = "+", Color.green
         elif plan_collection.type == PlanType.REMOVE:
@@ -53,8 +53,8 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
 
         lines.append(PlanLine(text=""))
         lines.append(PlanLine(text=f"{symbol} entity '{entity_name}'", color=color))
-        for entity_mutation in plan_collection.mutations:
-            match entity_mutation:
+        for entity_migration in plan_collection.migrations:
+            match entity_migration:
                 case CreateEntity(entity=entity):
                     if entity.layout.type == LayoutType.HNHM:
                         lines.append(
@@ -147,20 +147,18 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                         )
                     )
 
-    for link_name, plan_collection in links_mutations:
+    for link_name, plan_collection in links_migrations:
         if plan_collection.type == PlanType.CREATE:
             symbol, color = "+", Color.green
         elif plan_collection.type == PlanType.REMOVE:
             symbol, color = "-", Color.red
-        elif plan_collection.type == PlanType.UPDATE:
-            symbol, color = "[u]", Color.yellow
         else:
             raise HnhmError()
 
         lines.append(PlanLine(text=""))
         lines.append(PlanLine(text=f"{symbol} link '{link_name}'", color=color))
-        for link_mutation in plan_collection.mutations:
-            match link_mutation:
+        for link_migration in plan_collection.migrations:
+            match link_migration:
                 case RemoveLink(link=link):
                     for element in link.elements:
                         lines.append(

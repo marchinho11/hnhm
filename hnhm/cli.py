@@ -55,7 +55,7 @@ def apply(dwh_module: str, yes: bool):
     if plan.is_empty():
         return
 
-    if yes or click.confirm("Apply mutations?"):
+    if yes or click.confirm("Apply migrations?"):
         with registry.hnhm as hnhm:
             hnhm.apply(plan)
 
