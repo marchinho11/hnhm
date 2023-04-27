@@ -207,7 +207,7 @@ class HnHm:
 
             match migration:
                 case CreateEntity(entity=entity):
-                    assert entity.name not in self.data.entities
+                    self.data.check_entity_not_exists(entity.name)
                     self.sql.execute(sql)
                     if entity.layout.type == LayoutType.HNHM:
                         attributes = {}
@@ -225,44 +225,33 @@ class HnHm:
                     )
 
                 case RemoveEntity(entity=entity):
-                    assert entity.name in self.data.entities
+                    self.data.check_entity_exists(entity.name)
                     self.sql.execute(sql)
                     del self.data.entities[entity.name]
 
                 case CreateAttribute(entity=entity, attribute=attribute):
-                    assert entity.name in self.data.entities
-                    assert (
-                        attribute.name not in self.data.entities[entity.name].attributes
-                    )
+                    self.data.check_attribute_not_exists(entity.name, attribute.name)
                     self.sql.execute(sql)
                     self.data.entities[entity.name].attributes[attribute.name] = attribute
 
                 case RemoveAttribute(entity=entity, attribute=attribute):
-                    assert entity.name in self.data.entities
-                    assert attribute.name in self.data.entities[entity.name].attributes
+                    self.data.check_attribute_exists(entity.name, attribute.name)
                     self.sql.execute(sql)
                     del self.data.entities[entity.name].attributes[attribute.name]
 
                 case CreateGroup(entity=entity, group=group):
-                    assert entity.name in self.data.entities
-                    assert group.name not in self.data.entities[entity.name].groups
+                    self.data.check_group_not_exists(entity.name, group.name)
                     self.sql.execute(sql)
                     self.data.entities[entity.name].groups[group.name] = group
 
                 case RemoveGroup(entity=entity, group=group):
-                    assert entity.name in self.data.entities
-                    assert group.name in self.data.entities[entity.name].groups
+                    self.data.check_group_exists(entity.name, group.name)
                     self.sql.execute(sql)
                     del self.data.entities[entity.name].groups[group.name]
 
                 case AddGroupAttribute(entity=entity, group=group, attribute=attribute):
-                    assert entity.name in self.data.entities
-                    assert group.name in self.data.entities[entity.name].groups
-                    assert (
-                        attribute.name
-                        not in self.data.entities[entity.name]
-                        .groups[group.name]
-                        .attributes
+                    self.data.check_group_attribute_not_exists(
+                        entity.name, group.name, attribute.name
                     )
                     self.sql.execute(sql)
                     self.data.entities[entity.name].groups[group.name].attributes[
@@ -272,11 +261,8 @@ class HnHm:
                 case RemoveGroupAttribute(
                     entity=entity, group=group, attribute=attribute
                 ):
-                    assert entity.name in self.data.entities
-                    assert group.name in self.data.entities[entity.name].groups
-                    assert (
-                        attribute.name
-                        in self.data.entities[entity.name].groups[group.name].attributes
+                    self.data.check_group_attribute_exists(
+                        entity.name, group.name, attribute.name
                     )
                     self.sql.execute(sql)
                     del (
@@ -286,12 +272,12 @@ class HnHm:
                     )
 
                 case CreateLink(link=link):
-                    assert link.name not in self.data.links
+                    self.data.check_link_not_exists(link.name)
                     self.sql.execute(sql)
                     self.data.links[link.name] = link
 
                 case RemoveLink(link=link):
-                    assert link.name in self.data.links
+                    self.data.check_link_exists(link.name)
                     self.sql.execute(sql)
                     del self.data.links[link.name]
 

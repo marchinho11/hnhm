@@ -152,8 +152,6 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
             symbol, color = "+", Color.green
         elif plan_collection.type == PlanType.REMOVE:
             symbol, color = "-", Color.red
-        elif plan_collection.type == PlanType.UPDATE:
-            symbol, color = "[u]", Color.yellow
         else:
             raise HnhmError()
 

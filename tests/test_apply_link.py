@@ -2,7 +2,7 @@ from tests.dwh import User, Review, UserReview
 from tests.util import get_tables_in_database, get_column_names_for_table
 
 
-def test_create(hnhm, sqlalchemy_engine):
+def test_link(hnhm, sqlalchemy_engine):
     # Create
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[User(), Review()], links=[UserReview()]))
