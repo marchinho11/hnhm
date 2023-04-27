@@ -138,9 +138,24 @@ class Flow:
                         if group_name not in groups_mapping:
                             groups_mapping[group_name] = {}
                         groups_mapping[group_name][attribute_target] = attribute_source
-                        # todo: check all attributes for group were mapped
                     else:
                         attributes_mapping[attribute_target] = attribute_source
+
+                # Check all attributes for a Group were mapped
+                for group_name, group in target_entity.groups.items():
+                    group_mapping = groups_mapping.get(group_name)
+                    if not group_mapping:
+                        continue
+
+                    for attribute in group.attributes.values():
+                        if attribute not in group_mapping:
+                            attribute_full_name = (
+                                f"{target_entity.name}.{group_name}.{attribute.name}"
+                            )
+                            raise HnhmError(
+                                f"Mapping not found for the attribute '{attribute_full_name}'."
+                                f" Please, provide all mappings for the group: '{target_entity.name}.{group_name}'."
+                            )
 
                 missing_keys = set(target_entity.keys) - set(keys_mapping.keys())
                 if missing_keys:

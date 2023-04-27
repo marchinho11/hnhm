@@ -1,14 +1,14 @@
 import abc
 
 from .tasks import Task
-from .mutations import Mutation
+from .migrations import Migration
 
 
 class Sql(abc.ABC):
     """Generates and executes sql code."""
 
     @abc.abstractmethod
-    def generate_sql(self, mutation_or_task: Mutation | Task) -> str:
+    def generate_sql(self, migration_or_task: Migration | Task) -> str:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -17,7 +17,7 @@ class Sql(abc.ABC):
 
 
 class FakeSql(Sql):
-    def generate_sql(self, mutation_or_task: Mutation | Task) -> str:
+    def generate_sql(self, migration_or_task: Migration | Task) -> str:
         return ""
 
     def execute(self, sql: str):

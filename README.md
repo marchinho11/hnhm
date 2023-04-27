@@ -86,7 +86,7 @@ Plan:
     |attribute 'first_name'
     |attribute 'last_name'
 
-Apply mutations? [y/N]: y
+Apply migrations? [y/N]: y
 Applied!
 ```
 
