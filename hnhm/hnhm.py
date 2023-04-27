@@ -6,8 +6,8 @@ from hnhm.core import (
     Sql,
     Entity,
     Storage,
-    Mutation,
     HnhmError,
+    Migration,
     CreateLink,
     LayoutType,
     RemoveLink,
@@ -33,25 +33,25 @@ class PlanType(str, Enum):
 
 class PlanCollection(pydantic.BaseModel):
     type: PlanType
-    mutations: list[Mutation]
+    migrations: list[Migration]
 
 
 class Plan(pydantic.BaseModel):
-    entities_mutations: dict[str, PlanCollection]
-    links_mutations: dict[str, PlanCollection]
+    entities_migrations: dict[str, PlanCollection]
+    links_migrations: dict[str, PlanCollection]
 
     def is_empty(self):
-        return not self.entities_mutations and not self.links_mutations
+        return not self.entities_migrations and not self.links_migrations
 
     @property
-    def mutations_all(self):
-        mutations: list[Mutation] = []
-        for collection in self.entities_mutations.values():
-            mutations.extend(collection.mutations)
-        for collection in self.links_mutations.values():
-            mutations.extend(collection.mutations)
-        mutations = sorted(mutations, key=lambda m: m.priority)
-        return mutations
+    def migrations_all(self):
+        migrations: list[Migration] = []
+        for collection in self.entities_migrations.values():
+            migrations.extend(collection.migrations)
+        for collection in self.links_migrations.values():
+            migrations.extend(collection.migrations)
+        migrations = sorted(migrations, key=lambda m: m.priority)
+        return migrations
 
 
 class HnHm:
@@ -82,7 +82,7 @@ class HnHm:
             link_core = link.to_core()
             core_links[link_core.name] = link_core
 
-        plan = Plan(entities_mutations={}, links_mutations={})
+        plan = Plan(entities_migrations={}, links_migrations={})
 
         # Entity: create if not exists
         for entity in core_entities.values():
@@ -90,19 +90,19 @@ class HnHm:
                 continue
 
             # Create Entity
-            mutations = [CreateEntity(entity=entity)]
+            migrations = [CreateEntity(entity=entity)]
 
             if entity.layout.type == LayoutType.HNHM:
                 # Create Attribute
                 for attribute in entity.attributes.values():
-                    mutations.append(CreateAttribute(entity=entity, attribute=attribute))
+                    migrations.append(CreateAttribute(entity=entity, attribute=attribute))
                 # Create Group
                 for group in entity.groups.values():
-                    mutations.append(CreateGroup(entity=entity, group=group))
+                    migrations.append(CreateGroup(entity=entity, group=group))
 
-            plan.entities_mutations[entity.name] = PlanCollection(
+            plan.entities_migrations[entity.name] = PlanCollection(
                 type=PlanType.CREATE,
-                mutations=mutations,
+                migrations=migrations,
             )
 
         # Entity: create/remove/update Attribute/Group
@@ -113,16 +113,16 @@ class HnHm:
             attributes_state = self.data.entities[entity.name].attributes
             groups_state = self.data.entities[entity.name].groups
 
-            mutations = []
+            migrations = []
             # Create Attribute
             for attribute_name, attribute in entity.attributes.items():
                 if attribute_name not in attributes_state:
-                    mutations.append(CreateAttribute(entity=entity, attribute=attribute))
+                    migrations.append(CreateAttribute(entity=entity, attribute=attribute))
 
             # Remove Attribute
             for attribute_name, attribute in attributes_state.items():
                 if attribute_name not in entity.attributes:
-                    mutations.append(RemoveAttribute(entity=entity, attribute=attribute))
+                    migrations.append(RemoveAttribute(entity=entity, attribute=attribute))
 
             # Create/Update Group
             for group_name, group in entity.groups.items():
@@ -132,7 +132,7 @@ class HnHm:
                     # Add an Attribute to a Group
                     for attribute_name, attribute in group.attributes.items():
                         if attribute_name not in group_state.attributes:
-                            mutations.append(
+                            migrations.append(
                                 AddGroupAttribute(
                                     entity=entity, group=group, attribute=attribute
                                 )
@@ -140,72 +140,72 @@ class HnHm:
                     # Remove an Attribute from a Group
                     for attribute_name, attribute in group_state.attributes.items():
                         if attribute_name not in group.attributes:
-                            mutations.append(
+                            migrations.append(
                                 RemoveGroupAttribute(
                                     entity=entity, group=group, attribute=attribute
                                 )
                             )
                 # Create
                 else:
-                    mutations.append(CreateGroup(entity=entity, group=group))
+                    migrations.append(CreateGroup(entity=entity, group=group))
 
             # Remove Group
             for group_name, group in groups_state.items():
                 if group_name not in entity.groups:
-                    mutations.append(RemoveGroup(entity=entity, group=group))
+                    migrations.append(RemoveGroup(entity=entity, group=group))
 
-            if mutations:
-                plan.entities_mutations[entity.name] = PlanCollection(
+            if migrations:
+                plan.entities_migrations[entity.name] = PlanCollection(
                     type=PlanType.UPDATE,
-                    mutations=mutations,
+                    migrations=migrations,
                 )
 
         # Link: remove
         for link_name, link in self.data.links.items():
             if link_name not in core_links:
-                plan.links_mutations[link_name] = PlanCollection(
+                plan.links_migrations[link_name] = PlanCollection(
                     type=PlanType.REMOVE,
-                    mutations=[RemoveLink(link=link)],
+                    migrations=[RemoveLink(link=link)],
                 )
 
         # Entity: remove
         for entity_name, entity in self.data.entities.items():
             if entity_name not in core_entities:
-                mutations = []
+                migrations = []
 
                 if entity.layout.type == LayoutType.HNHM:
                     attributes_state = self.data.entities[entity_name].attributes
                     groups_state = self.data.entities[entity_name].groups
                     # Remove Attribute
                     for _, attribute_state in attributes_state.items():
-                        mutations.append(
+                        migrations.append(
                             RemoveAttribute(entity=entity, attribute=attribute_state)
                         )
                     # Remove Group
                     for group_name, group in groups_state.items():
-                        mutations.append(RemoveGroup(entity=entity, group=group))
+                        migrations.append(RemoveGroup(entity=entity, group=group))
 
-                mutations.append(RemoveEntity(entity=entity))
-                plan.entities_mutations[entity_name] = PlanCollection(
+                migrations.append(RemoveEntity(entity=entity))
+                plan.entities_migrations[entity_name] = PlanCollection(
                     type=PlanType.REMOVE,
-                    mutations=mutations,
+                    migrations=migrations,
                 )
 
         # Link: create
         for link_name, link in core_links.items():
             if link_name not in self.data.links:
-                plan.links_mutations[link.name] = PlanCollection(
+                plan.links_migrations[link.name] = PlanCollection(
                     type=PlanType.CREATE,
-                    mutations=[CreateLink(link=link)],
+                    migrations=[CreateLink(link=link)],
                 )
 
         return plan
 
     def apply(self, plan: Plan):
-        for mutation in plan.mutations_all:
-            sql = self.sql.generate_sql(mutation)
+        for migration in plan.migrations_all:
+            sql = self.sql.generate_sql(migration)
 
-            match mutation:
+            match migration:
                 case CreateEntity(entity=entity):
                     assert entity.name not in self.data.entities
                     self.sql.execute(sql)
@@ -296,4 +296,4 @@ class HnHm:
                     del self.data.links[link.name]
 
                 case _:
-                    raise HnhmError(f"Unknown mutation: '{mutation}'")
+                    raise HnhmError(f"Unknown migration: '{migration}'")

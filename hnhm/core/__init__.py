@@ -7,8 +7,8 @@ from .layout import Layout, LayoutType
 from .attribute import Type, Attribute, ChangeType
 from .storage import Storage, InMemStorage, HnhmStorageData
 from .tasks import Task, LoadHub, LoadLink, LoadGroup, LoadAttribute
-from .mutations import (
-    Mutation,
+from .migrations import (
+    Migration,
     CreateLink,
     RemoveLink,
     CreateGroup,

@@ -9,9 +9,9 @@ from hnhm.core import (
     Type,
     LoadHub,
     LoadLink,
-    Mutation,
     HnhmError,
     LoadGroup,
+    Migration,
     ChangeType,
     CreateLink,
     LayoutType,
@@ -46,8 +46,8 @@ PG_TYPES = {
 }
 
 
-def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -> str:
-    match mutation_or_task:
+def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment) -> str:
+    match migration_or_task:
         case CreateEntity(entity=entity):
             if entity.layout.type == LayoutType.HNHM:
                 template = jinja.from_string(SQL_TEMPLATE__CREATE_HUB)
@@ -306,9 +306,9 @@ def generate_sql(mutation_or_task: Mutation | Task, jinja: jinja2.Environment) -
             )
 
         case _:
-            mutation_or_task_type = type(mutation_or_task)
+            migration_or_task_type = type(migration_or_task)
             raise HnhmError(
-                f"Unknown mutation or task: '{mutation_or_task}' with type='{mutation_or_task_type}'."
+                f"Unknown migration or task: '{migration_or_task}' with type='{migration_or_task_type}'."
             )
 
 
@@ -347,8 +347,8 @@ class PostgresSqlalchemySql(Sql):
             )
         return cls(engine=engine)
 
-    def generate_sql(self, mutation_or_task: Mutation | Task) -> str:
-        return generate_sql(mutation_or_task, self.jinja)
+    def generate_sql(self, migration_or_task: Migration | Task) -> str:
+        return generate_sql(migration_or_task, self.jinja)
 
     def execute(self, sql: str, debug: bool = False):
         if debug:

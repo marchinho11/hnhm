@@ -7,13 +7,11 @@ from .priority import Priority
 from .attribute import Attribute
 
 
-class Mutation(pydantic.BaseModel):
-    """Mutation represents DWH change."""
-
+class Migration(pydantic.BaseModel):
     priority: Priority
 
 
-class CreateEntity(Mutation):
+class CreateEntity(Migration):
     priority = Priority.FIRST
     entity: Entity
 
@@ -21,7 +19,7 @@ class CreateEntity(Mutation):
         return f"<CreateEntity '{self.entity.name}'>"
 
 
-class RemoveEntity(Mutation):
+class RemoveEntity(Migration):
     priority = Priority.SECOND
     entity: Entity
 
@@ -29,7 +27,7 @@ class RemoveEntity(Mutation):
         return f"<RemoveEntity '{self.entity.name}'>"
 
 
-class CreateAttribute(Mutation):
+class CreateAttribute(Migration):
     priority = Priority.SECOND
     entity: Entity
     attribute: Attribute
@@ -38,7 +36,7 @@ class CreateAttribute(Mutation):
         return f"<CreateAttribute '{self.attribute.name}' entity='{self.entity.name}'>"
 
 
-class RemoveAttribute(Mutation):
+class RemoveAttribute(Migration):
     priority = Priority.FIRST
     entity: Entity
     attribute: Attribute
@@ -47,7 +45,7 @@ class RemoveAttribute(Mutation):
         return f"<RemoveAttribute '{self.attribute.name}' entity='{self.entity.name}'>"
 
 
-class CreateGroup(Mutation):
+class CreateGroup(Migration):
     priority = Priority.SECOND
     entity: Entity
     group: Group
@@ -56,7 +54,7 @@ class CreateGroup(Mutation):
         return f"<CreateGroup '{self.group.name}' entity='{self.entity.name}'>"
 
 
-class RemoveGroup(Mutation):
+class RemoveGroup(Migration):
     priority = Priority.FIRST
     entity: Entity
     group: Group
@@ -65,7 +63,7 @@ class RemoveGroup(Mutation):
         return f"<RemoveGroup '{self.group.name}' entity='{self.entity.name}'>"
 
 
-class AddGroupAttribute(Mutation):
+class AddGroupAttribute(Migration):
     """Add an Attribute to an existing Group."""
 
     priority = Priority.SECOND
@@ -81,7 +79,7 @@ class AddGroupAttribute(Mutation):
         )
 
 
-class RemoveGroupAttribute(Mutation):
+class RemoveGroupAttribute(Migration):
     """Remove an Attribute from an existing Group."""
 
     priority = Priority.SECOND
@@ -97,7 +95,7 @@ class RemoveGroupAttribute(Mutation):
         )
 
 
-class CreateLink(Mutation):
+class CreateLink(Migration):
     priority = Priority.SECOND
     link: Link
 
@@ -105,7 +103,7 @@ class CreateLink(Mutation):
         return f"<CreateLink '{self.link.name}'>"
 
 
-class RemoveLink(Mutation):
+class RemoveLink(Migration):
     priority = Priority.FIRST
     link: Link
 

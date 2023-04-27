@@ -107,12 +107,12 @@ def test_key_only(hnhm):
 
     with hnhm:
         plan = hnhm.plan(entities=[UserKeyOnly()])
-        mutations = plan.mutations_all
+        migrations = plan.migrations_all
 
-    assert len(mutations) == 1
-    mutation = mutations[0]
-    assert isinstance(mutation, CreateEntity)
-    assert mutation.entity.name == "user"
+    assert len(migrations) == 1
+    migration = migrations[0]
+    assert isinstance(migration, CreateEntity)
+    assert migration.entity.name == "user"
 
 
 def test_with_attribute(hnhm):
@@ -123,11 +123,11 @@ def test_with_attribute(hnhm):
 
     with hnhm:
         plan = hnhm.plan(entities=[UserWithAttribute()])
-        mutations = plan.mutations_all
+        migrations = plan.migrations_all
 
-    assert len(mutations) == 2
-    assert isinstance(mutations[0], CreateEntity)
-    assert isinstance(mutations[1], CreateAttribute)
+    assert len(migrations) == 2
+    assert isinstance(migrations[0], CreateEntity)
+    assert isinstance(migrations[1], CreateAttribute)
 
 
 def test_with_group(hnhm):
@@ -138,11 +138,11 @@ def test_with_group(hnhm):
 
     with hnhm:
         plan = hnhm.plan(entities=[UserWithGroup()])
-        mutations = plan.mutations_all
+        migrations = plan.migrations_all
 
-    assert len(mutations) == 2
-    assert isinstance(mutations[0], CreateEntity)
-    assert isinstance(mutations[1], CreateGroup)
+    assert len(migrations) == 2
+    assert isinstance(migrations[0], CreateEntity)
+    assert isinstance(migrations[1], CreateGroup)
 
 
 def test_stage_at_least_one_attribute(hnhm):
