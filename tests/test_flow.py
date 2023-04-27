@@ -54,6 +54,27 @@ def test_missing_keys_mappings():
         )
 
 
+class UserWithGroup(User):
+    """UserWithGroup"""
+
+    age = String(comment="Age.", change_type=ChangeType.IGNORE, group="g")
+    last_name = String(comment="Last name.", change_type=ChangeType.IGNORE, group="g")
+
+
+def test_missing_group_attributes_mappings():
+    with pytest.raises(
+        HnhmError,
+        match=(
+            f"Mapping not found for the attribute 'user.g.last_name'."
+            f" Please, provide all mappings for the group: 'user.g'."
+        ),
+    ):
+        Flow(source=Stage(), business_time_field=Stage.time).load(
+            UserWithGroup(),
+            mapping={UserWithGroup.user_id: Stage.user_id, UserWithGroup.age: Stage.age},
+        )
+
+
 def test_not_single_load_for_entity():
     with pytest.raises(
         HnhmError,
