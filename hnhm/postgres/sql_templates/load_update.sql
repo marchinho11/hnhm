@@ -1,4 +1,3 @@
-SQL_TEMPLATE__LOAD_UPDATE = """
 BEGIN;
 
 CREATE TABLE tmp__{{ target_table }}__load__update
@@ -90,4 +89,3 @@ WHERE
 DROP TABLE tmp__{{ target_table }}__load__update;
 
 COMMIT;
-"""

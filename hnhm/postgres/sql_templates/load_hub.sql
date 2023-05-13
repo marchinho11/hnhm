@@ -1,4 +1,3 @@
-SQL_TEMPLATE__LOAD_HUB = """
 INSERT INTO hub__{{ target_name }}(
     {{ target_name }}_sk,
     {% for target_key in target_keys -%}
@@ -20,4 +19,3 @@ FROM
     stg__{{ source_name }}
 ON CONFLICT
     ({{ target_name }}_sk) DO NOTHING
-"""

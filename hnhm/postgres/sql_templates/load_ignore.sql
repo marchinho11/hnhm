@@ -1,4 +1,3 @@
-SQL_TEMPLATE__LOAD_IGNORE = """
 WITH data AS (
     SELECT
         {{ source_sk }} AS sk,
@@ -39,5 +38,4 @@ LEFT OUTER JOIN
     ON d.sk = t.{{ target_sk }}
 WHERE
     t.{{ target_sk }} IS NULL
-    AND d.row_number = 1;
-"""
+    AND d.row_number = 1
