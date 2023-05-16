@@ -15,6 +15,10 @@ class Entity(pydantic.BaseModel):
     attributes: dict[str, Attribute]
     groups: dict[str, Group]
 
+    @property
+    def sk(self) -> str:
+        return f"{self.name}_sk"
+
     def __str__(self):
         return f"<Entity '{self.name}' layout='{self.layout}'>"
 

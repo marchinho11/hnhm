@@ -1,8 +1,12 @@
 import pytest
 
 from tests.dwh import User, Stage
-from tests.util import get_tables_in_database, get_column_names_for_table
 from hnhm import Layout, String, Integer, HnhmError, ChangeType, HnhmEntity, LayoutType
+from tests.util import (
+    get_views_in_database,
+    get_tables_in_database,
+    get_column_names_for_table,
+)
 
 
 def test_stage(hnhm, sqlalchemy_engine):
@@ -10,6 +14,7 @@ def test_stage(hnhm, sqlalchemy_engine):
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[Stage()]))
     assert get_tables_in_database(sqlalchemy_engine) == {"stg__stage"}
+    assert not get_views_in_database(sqlalchemy_engine)
 
     # Cleanup
     with hnhm:
@@ -100,6 +105,7 @@ def test_hub_only(hnhm, sqlalchemy_engine):
         "_source",
         "_loaded_at",
     }
+    assert get_views_in_database(sqlalchemy_engine) == {"entity__user"}
 
     # Cleanup
     with hnhm:

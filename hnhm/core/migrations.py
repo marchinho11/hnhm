@@ -1,3 +1,20 @@
+"""
+Create Entity order:
+    1. Create Entity
+    2. Create Attribute, Group
+    3. Recreate Entity's view
+
+Update Entity order:
+    1. Remove Entity's view
+    2. Create Entity
+    3. Create Attribute, Group
+    4. Recreate Entity's view
+
+Remove Entity order:
+    1. Remove Entity's view
+    2. Remove Attribute, Group
+    3. Remove Entity
+"""
 import pydantic
 
 from .link import Link
@@ -20,11 +37,27 @@ class CreateEntity(Migration):
 
 
 class RemoveEntity(Migration):
-    priority = Priority.SECOND
+    priority = Priority.THIRD
     entity: Entity
 
     def __str__(self):
         return f"<RemoveEntity '{self.entity.name}'>"
+
+
+class RecreateEntityView(Migration):
+    priority = Priority.THIRD
+    entity: Entity
+
+    def __str__(self):
+        return f"<RecreateEntityView '{self.entity.name}'>"
+
+
+class RemoveEntityView(Migration):
+    priority = Priority.FIRST
+    entity: Entity
+
+    def __str__(self):
+        return f"<RemoveEntityView '{self.entity.name}'>"
 
 
 class CreateAttribute(Migration):
@@ -37,7 +70,7 @@ class CreateAttribute(Migration):
 
 
 class RemoveAttribute(Migration):
-    priority = Priority.FIRST
+    priority = Priority.SECOND
     entity: Entity
     attribute: Attribute
 
@@ -55,7 +88,7 @@ class CreateGroup(Migration):
 
 
 class RemoveGroup(Migration):
-    priority = Priority.FIRST
+    priority = Priority.SECOND
     entity: Entity
     group: Group
 

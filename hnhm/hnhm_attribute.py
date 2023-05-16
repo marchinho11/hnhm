@@ -16,21 +16,19 @@ class HnhmAttribute(abc.ABC):
         self.comment = comment
         self.change_type = change_type
         self.group = group
-
-        self.owner = None
         self.name = None
 
-    def to_core(self) -> Attribute:
+    def to_core(self, entity_name: str) -> Attribute:
         return Attribute(
             name=self.name,
+            entity_name=entity_name,
             comment=self.comment,
             type=self.type,
             change_type=self.change_type,
             group=self.group,
         )
 
-    def __set_name__(self, owner, name):
-        self.owner = str(owner)
+    def __set_name__(self, _, name):
         self.name = name
 
 

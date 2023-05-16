@@ -80,6 +80,7 @@ $ hnhm apply dwh
 Plan:
 
 + entity 'user'
+  + view 'user'
   + hub 'user'
   + attribute 'age'
   + group 'name'
@@ -92,17 +93,19 @@ Applied!
 
 The physical result of applied changes:
 ```
-┌───────────────────┐   ┌────────────────┐   ┌─────────────────┐
-│ group__user__name │   │ hub__user      │   │ attr__user__age │
-│                   │   │                │   │                 │
-│ + user_sk (FK)    ├──►│ + user_sk (PK) │◄──┤ + user_sk (FK)  │
-│ + first_name      │   │ + user_id_bk   │   │ + age           │
-│ + last_name       │   │ + valid_from   │   │ + valid_from    │
-│ + valid_from      │   │ + _source      │   │ + _source       │
-│ + valid_to        │   │ + _loaded_at   │   │ + _loaded_at    │
-│ + _source         │   └────────────────┘   └─────────────────┘
-│ + _loaded_at      │
-└───────────────────┘
+view: entity__user
+┌────────────────────────────────────────────────────────────────┐
+│┌───────────────────┐   ┌────────────────┐   ┌─────────────────┐│
+ │ group__user__name │   │ hub__user      │   │ attr__user__age │
+ │                   │   │                │   │                 │
+ │ + user_sk (FK)    ├──►│ + user_sk (PK) │◄──┤ + user_sk (FK)  │
+ │ + first_name      │   │ + user_id_bk   │   │ + age           │
+ │ + last_name       │   │ + valid_from   │   │ + valid_from    │
+ │ + valid_from      │   │ + _source      │   │ + _source       │
+ │ + valid_to        │   │ + _loaded_at   │   │ + _loaded_at    │
+ │ + _source         │   └────────────────┘   └─────────────────┘
+ │ + _loaded_at      │
+ └───────────────────┘
 ```
 
 ## DWH example

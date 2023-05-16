@@ -23,7 +23,9 @@ from hnhm.core import (
     LoadAttribute,
     CreateAttribute,
     RemoveAttribute,
+    RemoveEntityView,
     AddGroupAttribute,
+    RecreateEntityView,
     RemoveGroupAttribute,
 )
 
@@ -61,6 +63,32 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 name=entity.name,
                 columns=columns,
                 columns_types=columns_types,
+            )
+
+        case RecreateEntityView(entity=entity):
+            template = jinja.get_template("update_entity_view.sql")
+
+            view_name = f"entity__{entity.name}"
+            sk = entity.sk
+            hub = f"hub__{entity.name}"
+
+            selects = []
+            for attribute in entity.attributes.values():
+                selects.append((attribute.table, attribute.name, attribute.name))
+
+            for group in entity.groups.values():
+                for attribute in group.attributes.values():
+                    selects.append(
+                        (group.table, attribute.name, f"{group.name}__{attribute.name}")
+                    )
+
+            return template.render(
+                view_name=view_name,
+                sk=sk,
+                hub=hub,
+                selects=selects,
+                attributes=entity.attributes.values(),
+                groups=entity.groups.values(),
             )
 
         case CreateAttribute(entity=entity, attribute=attribute):
@@ -140,6 +168,10 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
 
         case RemoveLink(link=link):
             return f"DROP TABLE link__{link.name}"
+
+        case RemoveEntityView(entity=entity):
+            view_name = f"entity__{entity.name}"
+            return f"DROP VIEW {view_name}"
 
         case LoadHub(
             source=source,

@@ -56,8 +56,8 @@ class HnhmLink(abc.ABC):
                 f"At least one Key is required for link='{name}'."
                 " Please, specify link's keys via the '__keys__' attribute."
             )
-        keys = inspected["__keys__"]
-        keys = [key.to_core() for key in keys]
+        keys_hnhm: list[HnhmEntity] = inspected["__keys__"]
+        keys = [key.to_core() for key in keys_hnhm]
 
         elements = []
         for class_attribute in inspected.values():
@@ -72,4 +72,10 @@ class HnhmLink(abc.ABC):
                 " Please, specify more than one elements."
             )
 
-        return Link(name=name, layout=layout, doc=doc, elements=elements, keys=keys)
+        return Link(
+            name=name,
+            layout=layout,
+            doc=doc,
+            elements=elements,
+            keys=keys,
+        )

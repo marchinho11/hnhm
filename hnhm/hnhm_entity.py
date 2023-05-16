@@ -53,7 +53,7 @@ class HnhmEntity(abc.ABC):
                             f" Use 'ChangeType.IGNORE' for the key attributes in the '{layout.type}.{name}' entity."
                         )
 
-                keys = [key.to_core() for key in keys_hnhm]
+                keys = [key.to_core(name) for key in keys_hnhm]
                 if len(keys) != len(set(keys)):
                     raise HnhmError(
                         f"Found duplicated keys for entity: '{layout.type}.{name}'."
@@ -68,7 +68,7 @@ class HnhmEntity(abc.ABC):
             if not isinstance(class_attribute, HnhmAttribute):
                 continue
 
-            attribute = class_attribute.to_core()
+            attribute = class_attribute.to_core(name)
             attribute_name = attribute.name
 
             if attribute.group:
@@ -76,6 +76,7 @@ class HnhmEntity(abc.ABC):
                 if group_name not in groups:
                     groups[group_name] = Group(
                         name=group_name,
+                        entity_name=name,
                         attributes={attribute_name: attribute},
                         change_type=attribute.change_type,
                     )

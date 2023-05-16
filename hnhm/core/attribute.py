@@ -34,17 +34,21 @@ class Attribute(pydantic.BaseModel):
     """Attribute core representation."""
 
     name: str
+    entity_name: str
     comment: str
     type: Type
     change_type: ChangeType
     group: str | None = None
-    owner: str | None = None
+
+    @property
+    def table(self):
+        return f"attr__{self.entity_name}__{self.name}"
 
     def __str__(self):
         return f"<{self.type} '{self.name}' change_type='{self.change_type}'>"
 
     def __hash__(self):
-        return hash(f"{self.owner}.{self.name}.{self.type}")
+        return hash(self.table)
 
     def __eq__(self, other):
         return hash(self) == hash(other)

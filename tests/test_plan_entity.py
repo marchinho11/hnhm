@@ -1,7 +1,6 @@
 import pytest
 
 from tests.dwh import User
-from hnhm.core import CreateGroup, CreateEntity, CreateAttribute
 from hnhm import Layout, String, Integer, HnhmError, ChangeType, HnhmEntity, LayoutType
 
 
@@ -109,10 +108,10 @@ def test_key_only(hnhm):
         plan = hnhm.plan(entities=[UserKeyOnly()])
         migrations = plan.migrations_all
 
-    assert len(migrations) == 1
-    migration = migrations[0]
-    assert isinstance(migration, CreateEntity)
-    assert migration.entity.name == "user"
+    assert [str(m) for m in migrations] == [
+        "<CreateEntity 'user'>",
+        "<RecreateEntityView 'user'>",
+    ]
 
 
 def test_with_attribute(hnhm):
@@ -125,9 +124,11 @@ def test_with_attribute(hnhm):
         plan = hnhm.plan(entities=[UserWithAttribute()])
         migrations = plan.migrations_all
 
-    assert len(migrations) == 2
-    assert isinstance(migrations[0], CreateEntity)
-    assert isinstance(migrations[1], CreateAttribute)
+    assert [str(m) for m in migrations] == [
+        "<CreateEntity 'user'>",
+        "<CreateAttribute 'name' entity='user'>",
+        "<RecreateEntityView 'user'>",
+    ]
 
 
 def test_with_group(hnhm):
@@ -140,9 +141,57 @@ def test_with_group(hnhm):
         plan = hnhm.plan(entities=[UserWithGroup()])
         migrations = plan.migrations_all
 
-    assert len(migrations) == 2
-    assert isinstance(migrations[0], CreateEntity)
-    assert isinstance(migrations[1], CreateGroup)
+    assert [str(m) for m in migrations] == [
+        "<CreateEntity 'user'>",
+        "<CreateGroup 'name' entity='user'>",
+        "<RecreateEntityView 'user'>",
+    ]
+
+
+def test_update_view(hnhm):
+    class UserWithGroup(User):
+        """UserWithGroup."""
+
+        name = String(comment="Name.", change_type=ChangeType.IGNORE, group="name")
+
+    # Create
+    with hnhm:
+        hnhm.apply(hnhm.plan(entities=[User()]))
+
+    # Update
+    with hnhm:
+        plan = hnhm.plan(entities=[UserWithGroup()])
+        migrations = plan.migrations_all
+
+    assert [str(m) for m in migrations] == [
+        "<RemoveEntityView 'user'>",
+        "<CreateGroup 'name' entity='user'>",
+        "<RecreateEntityView 'user'>",
+    ]
+
+
+def test_remove(hnhm):
+    class UserWithEverything(User):
+        """UserWithEverything."""
+
+        age = Integer(comment="Age.", change_type=ChangeType.IGNORE)
+        name = String(comment="Name.", change_type=ChangeType.NEW, group="name")
+
+    # Create
+    with hnhm:
+        hnhm.apply(hnhm.plan(entities=[UserWithEverything()]))
+
+    # Remove
+    with hnhm:
+        plan = hnhm.plan(entities=[])
+        migrations = plan.migrations_all
+
+    assert [str(m) for m in migrations] == [
+        "<RemoveEntityView 'user'>",
+        "<RemoveAttribute 'age' entity='user'>",
+        "<RemoveGroup 'name' entity='user'>",
+        "<RemoveEntity 'user'>",
+    ]
 
 
 def test_stage_at_least_one_attribute(hnhm):
