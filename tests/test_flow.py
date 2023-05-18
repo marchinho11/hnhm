@@ -57,15 +57,16 @@ def test_missing_keys_mappings():
 class UserWithGroup(User):
     """UserWithGroup"""
 
+    name_sep = String(comment="Name without group.", change_type=ChangeType.IGNORE)
     age = String(comment="Age.", change_type=ChangeType.IGNORE, group="g")
-    last_name = String(comment="Last name.", change_type=ChangeType.IGNORE, group="g")
+    name = String(comment="Name.", change_type=ChangeType.IGNORE, group="g")
 
 
 def test_missing_group_attributes_mappings():
     with pytest.raises(
         HnhmError,
         match=(
-            f"Mapping not found for the attribute 'user.g.last_name'."
+            f"Mapping not found for the attribute 'user.g.name'."
             f" Please, provide all mappings for the group: 'user.g'."
         ),
     ):
@@ -155,3 +156,54 @@ def test_not_single_load_for_link():
             .load(Link())
             .load(Link())
         )
+
+
+@pytest.fixture
+def flow() -> Flow:
+    yield (
+        Flow(source=Stage(), business_time_field=Stage.time)
+        .load(
+            UserWithGroup(),
+            mapping={
+                UserWithGroup.user_id: Stage.user_id,
+                UserWithGroup.age: Stage.age,
+                UserWithGroup.name: Stage.name,
+                UserWithGroup.name_sep: Stage.name,
+            },
+        )
+        .load(
+            Review(),
+            mapping={Review.review_id: Stage.review_id},
+        )
+        .load(Link())
+    )
+
+
+def test_tasks(flow):
+    assert [str(t) for t in flow.tasks] == [
+        "<LoadHub source='stage' target='user'>",
+        "<LoadHub source='stage' target='review'>",
+        "<LoadAttribute source='stage' target='user' source_attribute='name' target_attribute='name_sep'>",
+        "<LoadGroup 'g' source='stage' target='user'>",
+        "<LoadLink 'user_review' source='stage'>",
+    ]
+
+
+def test_ids(flow):
+    assert [t.id for t in flow.tasks] == [
+        "load_hub__stage__user",
+        "load_hub__stage__review",
+        "load_attribute__stage_name__user_name_sep",
+        "load_group__stage__user_g",
+        "load_link__stage__user_review",
+    ]
+
+
+def test_depends_on(flow):
+    assert [t.depends_on for t in flow.tasks] == [
+        [],
+        [],
+        ["load_hub__stage__user"],
+        ["load_hub__stage__user"],
+        ["load_hub__stage__review", "load_hub__stage__user"],
+    ]

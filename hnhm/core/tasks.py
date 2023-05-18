@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import pydantic
 
 from .link import Link
@@ -14,11 +16,21 @@ class Task(pydantic.BaseModel):
     source: Entity
     business_time_field: Attribute
     keys_mapping: dict[Attribute, Attribute]
+    depends_on: list[str] = []
+
+    @property
+    @abstractmethod
+    def id(self):
+        raise NotImplementedError
 
 
 class LoadHub(Task):
     priority = Priority.FIRST
     target: Entity
+
+    @property
+    def id(self):
+        return f"load_hub__{self.source.name}__{self.target.name}"
 
     def __str__(self):
         return f"<LoadHub source='{self.source.name}' target='{self.target.name}'>"
@@ -29,6 +41,14 @@ class LoadAttribute(Task):
     target: Entity
     source_attribute: Attribute
     target_attribute: Attribute
+
+    @property
+    def id(self):
+        return (
+            "load_attribute"
+            f"__{self.source.name}_{self.source_attribute.name}"
+            f"__{self.target.name}_{self.target_attribute.name}"
+        )
 
     def __str__(self):
         return (
@@ -46,12 +66,19 @@ class LoadGroup(Task):
     group: Group
     attributes_mapping: dict[Attribute, Attribute]
 
+    @property
+    def id(self):
+        return (
+            f"load_group"
+            f"__{self.source.name}"
+            f"__{self.target.name}_{self.group.name}"
+        )
+
     def __str__(self):
         return (
-            "<LoadGroup"
+            f"<LoadGroup '{self.group.name}'"
             f" source='{self.source.name}'"
-            f" target='{self.target.name}'"
-            f" group_name='{self.group.name}'>"
+            f" target='{self.target.name}'>"
         )
 
 
@@ -60,5 +87,9 @@ class LoadLink(Task):
     link: Link
     keys_mapping: dict[str, dict[Attribute, Attribute]]
 
+    @property
+    def id(self):
+        return f"load_link__{self.source.name}__{self.link.name}"
+
     def __str__(self):
-        return f"<LoadLink source='{self.source.name}' link_name='{self.link.name}'>"
+        return f"<LoadLink '{self.link.name}' source='{self.source.name}'>"
