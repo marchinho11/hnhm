@@ -1,7 +1,8 @@
 from textwrap import dedent
 
 import jinja2
-from sqlalchemy import URL, Engine, text, create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL, Engine
 
 from hnhm.core import (
     Sql,
@@ -379,8 +380,8 @@ class PostgresSqlalchemySql(Sql):
         conn = None
         try:
             conn = self.engine.connect()
-            conn.execute(text(sql))
-            conn.commit()
+            conn = conn.execution_options(isolation_level="AUTOCOMMIT")
+            conn.execute(sql)
         except Exception as e:
             raise e
         finally:

@@ -3,7 +3,8 @@ import random
 import string
 
 import pytest
-from sqlalchemy import Engine, text, create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy import text, create_engine
 
 from hnhm import HnHm, InMemStorage, PostgresSqlalchemySql
 
@@ -21,16 +22,16 @@ def generate_random_db_name(size=16, chars=string.ascii_lowercase):
 def sqlalchemy_engine() -> Engine:
     random_db_name = generate_random_db_name()
 
-    _engine = create_engine(f"postgresql+psycopg2://{PG_USER}@localhost/{PG_DB}")
-    conn = _engine.connect()
-    conn.execution_options(isolation_level="AUTOCOMMIT")
+    engine = create_engine(f"postgresql+psycopg2://{PG_USER}@localhost/{PG_DB}")
+    conn = engine.connect()
+    conn = conn.execution_options(isolation_level="AUTOCOMMIT")
     conn.execute(text(f"CREATE DATABASE {random_db_name}"))
 
     yield create_engine(f"postgresql+psycopg2://{PG_USER}@localhost/{random_db_name}")
 
     conn.execute(text(f"DROP DATABASE {random_db_name}"))
     conn.close()
-    _engine.dispose()
+    engine.dispose()
 
 
 @pytest.fixture

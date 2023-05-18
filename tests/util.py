@@ -2,7 +2,8 @@ import hashlib
 from datetime import datetime, timezone
 
 import pandas as pd
-from sqlalchemy import Engine, inspect
+from sqlalchemy import inspect
+from sqlalchemy.engine import Engine
 
 from hnhm import HnHm, HnhmLink, HnhmEntity
 
