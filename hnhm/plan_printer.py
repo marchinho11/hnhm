@@ -15,7 +15,9 @@ from .core import (
     RemoveEntity,
     CreateAttribute,
     RemoveAttribute,
+    RemoveEntityView,
     AddGroupAttribute,
+    RecreateEntityView,
     RemoveGroupAttribute,
 )
 
@@ -72,6 +74,11 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                                 )
                             )
 
+                case RecreateEntityView(entity=entity):
+                    lines.append(
+                        PlanLine(text=f"  {symbol} view '{entity.name}'", color=color)
+                    )
+
                 case CreateAttribute(entity=_, attribute=attribute):
                     lines.append(
                         PlanLine(
@@ -117,6 +124,12 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                                     color=Color.red,
                                 )
                             )
+
+                case RemoveEntityView(entity=entity):
+                    if plan_collection.type == PlanType.REMOVE:
+                        lines.append(
+                            PlanLine(text=f"  - view '{entity.name}'", color=Color.red)
+                        )
 
                 case RemoveAttribute(entity=_, attribute=attribute):
                     lines.append(

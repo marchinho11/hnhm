@@ -59,6 +59,13 @@ def get_tables_in_database(engine: Engine) -> set[str]:
     return table_names
 
 
+def get_views_in_database(engine: Engine) -> set[str]:
+    inspector = inspect(engine)
+    view_names = set(inspector.get_view_names())
+    engine.dispose()
+    return view_names
+
+
 def get_column_names_for_table(engine: Engine, table: str) -> set[str]:
     inspector = inspect(engine)
     table_info = inspector.get_columns(table)

@@ -1,4 +1,3 @@
-SQL_TEMPLATE__CREATE_LINK = """
 CREATE TABLE link__{{ name }}(
     {% for entity in entities -%}
         {{ entity }}_sk VARCHAR(32) NOT NULL,
@@ -17,4 +16,3 @@ CREATE TABLE link__{{ name }}(
 
     PRIMARY KEY({{ primary_keys | join(', ') }})
 )
-"""

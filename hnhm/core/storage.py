@@ -11,6 +11,7 @@ class HnhmStorageData(pydantic.BaseModel):
     """State data for hnhm."""
 
     entities: dict[str, Entity]
+    entities_views: set[str]
     links: dict[str, Link]
 
     def check_entity_exists(self, entity: str):
@@ -72,7 +73,7 @@ class Storage(abc.ABC):
 
 class InMemStorage(Storage):
     def load(self) -> HnhmStorageData:
-        return HnhmStorageData(entities={}, links={})
+        return HnhmStorageData(entities={}, entities_views=set(), links={})
 
     def save(self, data: HnhmStorageData):
         pass

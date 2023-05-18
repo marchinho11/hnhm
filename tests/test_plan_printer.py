@@ -33,9 +33,11 @@ def test_create_all(hnhm):
         PlanLine(text="Plan:"),
         PlanLine(text=""),
         PlanLine(text="+ entity 'review'", color=Color.green),
+        PlanLine(text="  + view 'review'", color=Color.green),
         PlanLine(text="  + hub 'review'", color=Color.green),
         PlanLine(text=""),
         PlanLine(text="+ entity 'user'", color=Color.green),
+        PlanLine(text="  + view 'user'", color=Color.green),
         PlanLine(text="  + hub 'user'", color=Color.green),
         PlanLine(text="  + attribute 'name'", color=Color.green),
         PlanLine(text="  + group 'age'", color=Color.green),
@@ -57,16 +59,26 @@ def test_remove_all(hnhm):
         )
 
     with hnhm:
-        plan = hnhm.plan(entities=[User(), Review()], links=[UserReview()])
+        plan = hnhm.plan(entities=[], links=[])
         lines = lines_from_plan(plan)
 
     assert lines == [
         PlanLine(text="Plan:"),
         PlanLine(text=""),
-        PlanLine(text="[u] entity 'user'", color=Color.yellow),
+        PlanLine(text="- entity 'review'", color=Color.red),
+        PlanLine(text="  - view 'review'", color=Color.red),
+        PlanLine(text="  - hub 'review'", color=Color.red),
+        PlanLine(text=""),
+        PlanLine(text="- entity 'user'", color=Color.red),
+        PlanLine(text="  - view 'user'", color=Color.red),
         PlanLine(text="  - attribute 'name'", color=Color.red),
         PlanLine(text="  - group 'age'", color=Color.red),
         PlanLine(text="    | attribute 'age'", color=Color.red),
+        PlanLine(text="  - hub 'user'", color=Color.red),
+        PlanLine(text=""),
+        PlanLine(text="- link 'user_review'", color=Color.red),
+        PlanLine(text="  |element 'review'", color=Color.red),
+        PlanLine(text="  |element 'user'", color=Color.red),
         PlanLine(text=""),
     ]
 
@@ -98,6 +110,7 @@ def test_add_remove_group_attribute(hnhm):
         PlanLine(text="[u] entity 'user'", color=Color.yellow),
         PlanLine(text="  [u] group 'age'", color=Color.yellow),
         PlanLine(text="    +attribute 'second_age'", color=Color.green),
+        PlanLine(text="  [u] view 'user'", color=Color.yellow),
         PlanLine(text=""),
     ]
 
@@ -114,5 +127,6 @@ def test_add_remove_group_attribute(hnhm):
         PlanLine(text="[u] entity 'user'", color=Color.yellow),
         PlanLine(text="  [u] group 'age'", color=Color.yellow),
         PlanLine(text="    -attribute 'second_age'", color=Color.red),
+        PlanLine(text="  [u] view 'user'", color=Color.yellow),
         PlanLine(text=""),
     ]

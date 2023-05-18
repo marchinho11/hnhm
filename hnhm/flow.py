@@ -24,7 +24,7 @@ class Flow:
             )
 
         self.source = source
-        self.business_time_field = business_time_field.to_core()
+        self.business_time_field = business_time_field.to_core(source.name)
 
         # {entity_name -> {attribute_target -> attribute_source}}
         self._entities_keys_mappings: dict[str, dict[Attribute, Attribute]] = {}
@@ -129,8 +129,8 @@ class Flow:
                 groups_mapping = {}
                 attributes_mapping = {}
                 for attribute_target, attribute_source in mapping.items():
-                    attribute_target = attribute_target.to_core()
-                    attribute_source = attribute_source.to_core()
+                    attribute_target = attribute_target.to_core(target_entity.name)
+                    attribute_source = attribute_source.to_core(self.source.name)
                     if attribute_target in target_entity.keys:
                         keys_mapping[attribute_target] = attribute_source
                     elif attribute_target.group:

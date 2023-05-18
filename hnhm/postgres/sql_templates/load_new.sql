@@ -1,4 +1,3 @@
-SQL_TEMPLATE__LOAD_NEW = """
 BEGIN;
 
 CREATE TABLE _tmp__{{ target_table }}__load__new
@@ -173,4 +172,3 @@ WHERE
 DROP TABLE _tmp__{{ target_table }}__load__new;
 
 COMMIT;
-"""

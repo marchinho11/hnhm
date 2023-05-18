@@ -23,20 +23,10 @@ from hnhm.core import (
     LoadAttribute,
     CreateAttribute,
     RemoveAttribute,
+    RemoveEntityView,
     AddGroupAttribute,
+    RecreateEntityView,
     RemoveGroupAttribute,
-)
-
-from .sql_templates import (
-    SQL_TEMPLATE__LOAD_HUB,
-    SQL_TEMPLATE__LOAD_NEW,
-    SQL_TEMPLATE__CREATE_HUB,
-    SQL_TEMPLATE__CREATE_LINK,
-    SQL_TEMPLATE__LOAD_IGNORE,
-    SQL_TEMPLATE__LOAD_UPDATE,
-    SQL_TEMPLATE__CREATE_GROUP,
-    SQL_TEMPLATE__CREATE_STAGE,
-    SQL_TEMPLATE__CREATE_ATTRIBUTE,
 )
 
 PG_TYPES = {
@@ -50,7 +40,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
     match migration_or_task:
         case CreateEntity(entity=entity):
             if entity.layout.type == LayoutType.HNHM:
-                template = jinja.from_string(SQL_TEMPLATE__CREATE_HUB)
+                template = jinja.get_template("create_hub.sql")
                 columns = []
                 columns_types = []
                 for key in entity.keys:
@@ -59,7 +49,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                     columns_types.append(f"{column_type} NOT NULL")
 
             elif entity.layout.type == LayoutType.STAGE:
-                template = jinja.from_string(SQL_TEMPLATE__CREATE_STAGE)
+                template = jinja.get_template("create_stage.sql")
                 columns = []
                 columns_types = []
                 for attribute in entity.attributes.values():
@@ -75,6 +65,32 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 columns_types=columns_types,
             )
 
+        case RecreateEntityView(entity=entity):
+            template = jinja.get_template("update_entity_view.sql")
+
+            view_name = f"entity__{entity.name}"
+            sk = entity.sk
+            hub = f"hub__{entity.name}"
+
+            selects = []
+            for attribute in entity.attributes.values():
+                selects.append((attribute.table, attribute.name, attribute.name))
+
+            for group in entity.groups.values():
+                for attribute in group.attributes.values():
+                    selects.append(
+                        (group.table, attribute.name, f"{group.name}__{attribute.name}")
+                    )
+
+            return template.render(
+                view_name=view_name,
+                sk=sk,
+                hub=hub,
+                selects=selects,
+                attributes=entity.attributes.values(),
+                groups=entity.groups.values(),
+            )
+
         case CreateAttribute(entity=entity, attribute=attribute):
             attribute_type = PG_TYPES[attribute.type]
 
@@ -85,7 +101,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
             if attribute.change_type == ChangeType.NEW:
                 time_columns.append("valid_to TIMESTAMPTZ")
 
-            template = jinja.from_string(SQL_TEMPLATE__CREATE_ATTRIBUTE)
+            template = jinja.get_template("create_attribute.sql")
             return template.render(
                 entity_name=entity.name,
                 attribute_name=attribute.name,
@@ -103,7 +119,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
             if group.change_type == ChangeType.NEW:
                 time_columns.append("valid_to TIMESTAMPTZ")
 
-            template = jinja.from_string(SQL_TEMPLATE__CREATE_GROUP)
+            template = jinja.get_template("create_group.sql")
             return template.render(
                 entity_name=entity.name,
                 group_name=group.name,
@@ -124,7 +140,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
             for key in link.keys:
                 primary_keys.append(f"{key.entity.name}_sk")
 
-            template = jinja.from_string(SQL_TEMPLATE__CREATE_LINK)
+            template = jinja.get_template("create_link.sql")
             return template.render(
                 name=link.name,
                 entities=entities,
@@ -153,6 +169,10 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
         case RemoveLink(link=link):
             return f"DROP TABLE link__{link.name}"
 
+        case RemoveEntityView(entity=entity):
+            view_name = f"entity__{entity.name}"
+            return f"DROP VIEW {view_name}"
+
         case LoadHub(
             source=source,
             target=target,
@@ -166,7 +186,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
 
             target_keys = [key.name for key in target.keys]
 
-            template = jinja.from_string(SQL_TEMPLATE__LOAD_HUB)
+            template = jinja.get_template("load_hub.sql")
             return template.render(
                 source_name=source.name,
                 source_sk=source_sk,
@@ -200,11 +220,11 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
             target_attributes = [target_attribute.name]
 
             if target_attribute.change_type == ChangeType.IGNORE:
-                template = jinja.from_string(SQL_TEMPLATE__LOAD_IGNORE)
+                template = jinja.get_template("load_ignore.sql")
             elif target_attribute.change_type == ChangeType.UPDATE:
-                template = jinja.from_string(SQL_TEMPLATE__LOAD_UPDATE)
+                template = jinja.get_template("load_update.sql")
             elif target_attribute.change_type == ChangeType.NEW:
-                template = jinja.from_string(SQL_TEMPLATE__LOAD_NEW)
+                template = jinja.get_template("load_new.sql")
             else:
                 raise HnhmError(f"Unknown change type: '{target_attribute.change_type}'.")
 
@@ -249,11 +269,11 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
             ]
 
             if group.change_type == ChangeType.IGNORE:
-                template = jinja.from_string(SQL_TEMPLATE__LOAD_IGNORE)
+                template = jinja.get_template("load_ignore.sql")
             elif group.change_type == ChangeType.UPDATE:
-                template = jinja.from_string(SQL_TEMPLATE__LOAD_UPDATE)
+                template = jinja.get_template("load_update.sql")
             elif group.change_type == ChangeType.NEW:
-                template = jinja.from_string(SQL_TEMPLATE__LOAD_NEW)
+                template = jinja.get_template("load_new.sql")
             else:
                 raise HnhmError(f"Unknown change type: '{group.change_type}'.")
 
@@ -293,7 +313,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
 
             target_table = f"link__{link.name}"
 
-            template = jinja.from_string(SQL_TEMPLATE__LOAD_NEW)
+            template = jinja.get_template("load_new.sql")
             return template.render(
                 source_table=source_table,
                 source_sks=source_sks,
@@ -336,7 +356,9 @@ class PostgresSqlalchemySql(Sql):
             )
             self.engine = create_engine(connection_url)
 
-        self.jinja = jinja2.Environment()
+        self.jinja = jinja2.Environment(
+            loader=jinja2.PackageLoader("hnhm.postgres", "sql_templates")
+        )
         self.jinja.globals.update(zip=zip)
 
     @classmethod

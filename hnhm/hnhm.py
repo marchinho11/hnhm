@@ -17,7 +17,9 @@ from hnhm.core import (
     RemoveEntity,
     CreateAttribute,
     RemoveAttribute,
+    RemoveEntityView,
     AddGroupAttribute,
+    RecreateEntityView,
     RemoveGroupAttribute,
 )
 
@@ -86,24 +88,34 @@ class HnHm:
 
         # Entity: create if not exists
         for entity in core_entities.values():
-            if entity.name in self.data.entities:
-                continue
+            migrations = []
+
+            # Entity's View: create/update if not exists
+            if (
+                entity.name not in self.data.entities_views
+                and entity.layout.type == LayoutType.HNHM
+            ):
+                migrations.append(RecreateEntityView(entity=entity))
 
             # Create Entity
-            migrations = [CreateEntity(entity=entity)]
+            if entity.name not in self.data.entities:
+                migrations.append(CreateEntity(entity=entity))
 
-            if entity.layout.type == LayoutType.HNHM:
-                # Create Attribute
-                for attribute in entity.attributes.values():
-                    migrations.append(CreateAttribute(entity=entity, attribute=attribute))
-                # Create Group
-                for group in entity.groups.values():
-                    migrations.append(CreateGroup(entity=entity, group=group))
+                if entity.layout.type == LayoutType.HNHM:
+                    # Create Attribute
+                    for attribute in entity.attributes.values():
+                        migrations.append(
+                            CreateAttribute(entity=entity, attribute=attribute)
+                        )
+                    # Create Group
+                    for group in entity.groups.values():
+                        migrations.append(CreateGroup(entity=entity, group=group))
 
-            plan.entities_migrations[entity.name] = PlanCollection(
-                type=PlanType.CREATE,
-                migrations=migrations,
-            )
+            if migrations:
+                plan.entities_migrations[entity.name] = PlanCollection(
+                    type=PlanType.CREATE,
+                    migrations=migrations,
+                )
 
         # Entity: create/remove/update Attribute/Group
         for entity in core_entities.values():
@@ -155,6 +167,13 @@ class HnHm:
                     migrations.append(RemoveGroup(entity=entity, group=group))
 
             if migrations:
+                if entity.layout.type == LayoutType.HNHM:
+                    migrations.extend(
+                        [
+                            RemoveEntityView(entity=entity),
+                            RecreateEntityView(entity=entity),
+                        ]
+                    )
                 plan.entities_migrations[entity.name] = PlanCollection(
                     type=PlanType.UPDATE,
                     migrations=migrations,
@@ -174,6 +193,8 @@ class HnHm:
                 migrations = []
 
                 if entity.layout.type == LayoutType.HNHM:
+                    migrations.append(RemoveEntityView(entity=entity))
+
                     attributes_state = self.data.entities[entity_name].attributes
                     groups_state = self.data.entities[entity_name].groups
                     # Remove Attribute
@@ -228,6 +249,16 @@ class HnHm:
                     self.data.check_entity_exists(entity.name)
                     self.sql.execute(sql)
                     del self.data.entities[entity.name]
+
+                case RecreateEntityView(entity=entity):
+                    self.sql.execute(sql)
+                    self.data.entities_views.add(entity.name)
+
+                case RemoveEntityView(entity=entity):
+                    if entity.name not in self.data.entities_views:
+                        raise HnhmError(f"Entity's View '{entity.name}' doesn't exist.")
+                    self.sql.execute(sql)
+                    self.data.entities_views.remove(entity.name)
 
                 case CreateAttribute(entity=entity, attribute=attribute):
                     self.data.check_attribute_not_exists(entity.name, attribute.name)

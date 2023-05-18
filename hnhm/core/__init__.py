@@ -17,6 +17,8 @@ from .migrations import (
     RemoveEntity,
     CreateAttribute,
     RemoveAttribute,
+    RemoveEntityView,
     AddGroupAttribute,
+    RecreateEntityView,
     RemoveGroupAttribute,
 )

@@ -7,7 +7,7 @@ from tests.dwh import User
 from hnhm import String, ChangeType
 from hnhm.core import HnhmError, HnhmStorageData
 
-storage_data = HnhmStorageData(entities={}, links={})
+storage_data = HnhmStorageData(entities={}, entities_views=set(), links={})
 
 
 class UserWithAttribute(User):

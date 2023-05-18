@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from hnhm.core import Storage, HnhmStorageData
@@ -12,8 +11,8 @@ class FileStorage(Storage):
         if Path(self.file_name).is_file():
             return HnhmStorageData.parse_file(self.file_name)
         else:
-            return HnhmStorageData(entities={}, links={})
+            return HnhmStorageData(entities={}, entities_views=set(), links={})
 
     def save(self, data: HnhmStorageData):
         with open(self.file_name, "w") as f:
-            json.dump(data.dict(), f, ensure_ascii=False, indent=2)
+            f.write(data.json(ensure_ascii=False, indent=2))
