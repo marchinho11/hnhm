@@ -1,5 +1,7 @@
+import pytest
+
 from tests.dwh import User
-from hnhm import Layout, String, ChangeType, LayoutType
+from hnhm import Layout, String, HnhmError, ChangeType, LayoutType
 from tests.util import get_views_in_database, get_column_names_for_table
 
 
@@ -8,6 +10,19 @@ def test_only_sk(hnhm, sqlalchemy_engine):
         hnhm.apply(hnhm.plan(entities=[User()]))
     assert get_views_in_database(sqlalchemy_engine) == {"entity__user"}
     assert get_column_names_for_table(sqlalchemy_engine, "entity__user") == {"user_sk"}
+
+
+def test_fail_on_second_delete(hnhm, sqlalchemy_engine):
+    with hnhm:
+        hnhm.apply(hnhm.plan(entities=[User()]))
+
+    with hnhm:
+        plan = hnhm.plan(entities=[])
+        hnhm.apply(plan)
+
+    with pytest.raises(HnhmError, match="Entity's View 'user' doesn't exist."), hnhm:
+        with hnhm:
+            hnhm.apply(plan)
 
 
 class UserWithAttributeAndGroup(User):
