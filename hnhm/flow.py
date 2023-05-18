@@ -43,21 +43,22 @@ class Flow:
 
     @property
     def tasks(self) -> list[Task]:
-        tasks: list[Task] = []
+        tasks = []
+        hub_tasks = {}
         for target_name, target in self._hubs.items():
             keys_mapping = self._entities_keys_mappings[target_name]
-            tasks.append(
-                LoadHub(
-                    source=self.source,
-                    target=target,
-                    keys_mapping=keys_mapping,
-                    business_time_field=self.business_time_field,
-                )
+            hub_tasks[target_name] = LoadHub(
+                source=self.source,
+                target=target,
+                keys_mapping=keys_mapping,
+                business_time_field=self.business_time_field,
             )
 
         for target_name, attributes_mapping in self._attributes.items():
             target = self._hubs[target_name]
+            depends_on = [hub_tasks[target_name].id]
             keys_mapping = self._entities_keys_mappings[target_name]
+
             for target_attribute, source_attribute in attributes_mapping.items():
                 tasks.append(
                     LoadAttribute(
@@ -67,11 +68,13 @@ class Flow:
                         source_attribute=source_attribute,
                         target_attribute=target_attribute,
                         business_time_field=self.business_time_field,
+                        depends_on=depends_on,
                     )
                 )
 
         for target_name, groups_mapping in self._groups.items():
             target = self._hubs[target_name]
+            depends_on = [hub_tasks[target_name].id]
             keys_mapping = self._entities_keys_mappings[target_name]
             for group_name, attributes_mapping in groups_mapping.items():
                 group = target.groups[group_name]
@@ -83,24 +86,27 @@ class Flow:
                         keys_mapping=keys_mapping,
                         attributes_mapping=attributes_mapping,
                         business_time_field=self.business_time_field,
+                        depends_on=depends_on,
                     )
                 )
 
         for link_name, link in self._links.items():
             keys_mapping = {}
+            depends_on = []
             for link_element in link.elements:
-                keys_mapping[link_element.entity.name] = self._entities_keys_mappings[
-                    link_element.entity.name
-                ]
+                entity_name = link_element.entity.name
+                depends_on.append(hub_tasks[entity_name].id)
+                keys_mapping[entity_name] = self._entities_keys_mappings[entity_name]
             tasks.append(
                 LoadLink(
                     source=self.source,
                     link=link,
                     keys_mapping=keys_mapping,
                     business_time_field=self.business_time_field,
+                    depends_on=depends_on,
                 )
             )
-
+        tasks.extend(hub_tasks.values())
         tasks = sorted(tasks, key=lambda t: t.priority)
         return tasks
 
