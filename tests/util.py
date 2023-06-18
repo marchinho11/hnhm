@@ -1,47 +1,75 @@
 import hashlib
 from datetime import datetime, timezone
 
-import pandas as pd
-from sqlalchemy import inspect
-from sqlalchemy.engine import Engine
+from psycopg2.extensions import AsIs
+from psycopg2.extensions import cursor as Cursor
 
 from hnhm import HnHm, HnhmLink, HnhmEntity
 
-TIME = datetime(2022, 12, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
-TIME_INFINITY = datetime(9999, 12, 31, 23, 59, 59, 999999, tzinfo=timezone.utc)
+TIME = datetime(
+    year=2022,
+    month=12,
+    day=1,
+    hour=0,
+    minute=0,
+    second=0,
+    microsecond=0,
+    tzinfo=timezone.utc,
+)
+
+TIME_INFINITY = datetime(
+    year=9999,
+    month=12,
+    day=31,
+    hour=23,
+    minute=59,
+    second=59,
+    microsecond=999999,
+    tzinfo=timezone.utc,
+)
 
 
 def md5(*s) -> str:
     return hashlib.md5("-".join(s).encode()).hexdigest()
 
 
-def insert_data(data: dict, table: str, engine: Engine):
-    df = pd.DataFrame(data)
-    df.to_sql(table, con=engine, if_exists="append", index=False)
-    engine.dispose()
+def insert_row(table: str, row: dict, cursor):
+    columns = ",".join(row.keys())
+    values = tuple(row.values())
+
+    cursor.execute(
+        f"INSERT INTO {table}(%s) values %s",
+        (AsIs(columns), values),
+    )
 
 
-def get_data(
+def get_rows(
     table: str,
-    engine: Engine,
-    sort_by: list[str] | None = None,
-    exclude_columns: tuple[str] | None = ("_loaded_at",),
-) -> dict:
-    df = pd.read_sql_query(f"SELECT * FROM {table}", con=engine)
-    if sort_by:
-        df = df.sort_values(sort_by)
-    if exclude_columns:
-        columns = set(df.columns) - set(exclude_columns)
-        df = df[list(columns)]
-    engine.dispose()
-    return df.to_dict(orient="list")
+    cursor,
+    exclude_columns: set[str] | None = None,
+    order_by: str | None = None,
+) -> list[dict]:
+    exclude_columns = exclude_columns or {"_loaded_at"}
+
+    sql = f"SELECT * FROM {table}"
+    if order_by:
+        sql += f" ORDER BY {order_by}"
+
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    columns = [d[0] for d in cursor.description]
+    dicts = [
+        dict(filter(lambda cr: cr[0] not in exclude_columns, zip(columns, row)))
+        for row in rows
+    ]
+    return dicts
 
 
 def init_dwh(
     *,
-    stage_data: dict[str, dict],
     hnhm: HnHm,
-    engine: Engine,
+    stage_data: dict[str, list],
+    cursor,
     entities: list[HnhmEntity] | None = None,
     links: list[HnhmLink] | None = None,
 ):
@@ -49,28 +77,30 @@ def init_dwh(
         with hnhm:
             hnhm.apply(hnhm.plan(entities=entities, links=links))
 
-    for stage_table_name, data in stage_data.items():
-        insert_data(data, stage_table_name, engine)
+    for stage_table_name, rows in stage_data.items():
+        for row in rows:
+            insert_row(stage_table_name, row, cursor)
 
 
-def get_tables_in_database(engine: Engine) -> set[str]:
-    inspector = inspect(engine)
-    table_names = set(inspector.get_table_names())
-    engine.dispose()
-    return table_names
+def get_tables(cursor: Cursor) -> set[str]:
+    cursor.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public'")
+    tables = cursor.fetchall()
+    tables = set(t[0] for t in tables)
+
+    return tables
 
 
-def get_views_in_database(engine: Engine) -> set[str]:
-    inspector = inspect(engine)
-    view_names = set(inspector.get_view_names())
-    engine.dispose()
-    return view_names
+def get_views(cursor: Cursor) -> set[str]:
+    cursor.execute("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname='public'")
+    views = cursor.fetchall()
+    views = set(t[0] for t in views)
+    return views
 
 
-def get_column_names_for_table(engine: Engine, table: str) -> set[str]:
-    inspector = inspect(engine)
-    table_info = inspector.get_columns(table)
-    engine.dispose()
-
-    columns = set(column["name"] for column in table_info)
+def get_columns(table: str, cursor: Cursor) -> set[str]:
+    cursor.execute(
+        f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}'"
+    )
+    columns = cursor.fetchall()
+    columns = set(c[0] for c in columns)
     return columns

@@ -1,17 +1,7 @@
-from hnhm.core import (
-    Task,
-    Entity,
-    LoadHub,
-    LoadLink,
-    Attribute,
-    HnhmError,
-    LoadGroup,
-    LoadAttribute,
-)
-
 from .hnhm_link import HnhmLink
 from .hnhm_attribute import HnhmAttribute
 from .hnhm_entity import HnhmEntity, LayoutType
+from .core import Entity, Attribute, HnhmError, task
 
 
 class Flow:
@@ -42,12 +32,12 @@ class Flow:
         self._links = {}
 
     @property
-    def tasks(self) -> list[Task]:
+    def tasks(self) -> list[task.Task]:
         tasks = []
         hub_tasks = {}
         for target_name, target in self._hubs.items():
             keys_mapping = self._entities_keys_mappings[target_name]
-            hub_tasks[target_name] = LoadHub(
+            hub_tasks[target_name] = task.LoadHub(
                 source=self.source,
                 target=target,
                 keys_mapping=keys_mapping,
@@ -61,7 +51,7 @@ class Flow:
 
             for target_attribute, source_attribute in attributes_mapping.items():
                 tasks.append(
-                    LoadAttribute(
+                    task.LoadAttribute(
                         source=self.source,
                         target=target,
                         keys_mapping=keys_mapping,
@@ -79,7 +69,7 @@ class Flow:
             for group_name, attributes_mapping in groups_mapping.items():
                 group = target.groups[group_name]
                 tasks.append(
-                    LoadGroup(
+                    task.LoadGroup(
                         source=self.source,
                         target=target,
                         group=group,
@@ -98,7 +88,7 @@ class Flow:
                 depends_on.append(hub_tasks[entity_name].id)
                 keys_mapping[entity_name] = self._entities_keys_mappings[entity_name]
             tasks.append(
-                LoadLink(
+                task.LoadLink(
                     source=self.source,
                     link=link,
                     keys_mapping=keys_mapping,

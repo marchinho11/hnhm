@@ -1,198 +1,190 @@
 from datetime import timedelta
 
-from tests.dwh import User, Stage
-from hnhm import Flow, String, ChangeType
-from tests.util import TIME, TIME_INFINITY, md5, get_data, init_dwh
+from hnhm import Flow, Integer, ChangeType
+from tests.__hnhm__ import StageWith5Columns, UserWith1Key1Attribute
+from tests.util import TIME, TIME_INFINITY, md5, get_rows, init_dwh, insert_row
 
 
-def test_ignore(hnhm, sqlalchemy_engine):
-    class UserIgnore(User):
-        """UserIgnore."""
-
-        name = String(comment="User name", change_type=ChangeType.IGNORE)
-
-    stage_data = {
-        "user_id": ["user-id-0"],
-        "name": ["Mark Alonso"],
-        "time": [TIME],
-    }
-    expected_attribute_data = {
-        "user_sk": [md5("user-id-0")],
-        "name": ["Mark Alonso"],
-        "valid_from": [TIME],
-        "_source": ["stg__stage"],
-    }
+def test_ignore(hnhm, cursor):
     init_dwh(
         hnhm=hnhm,
-        engine=sqlalchemy_engine,
-        entities=[Stage(), UserIgnore()],
-        stage_data={"stg__stage": stage_data},
+        entities=[StageWith5Columns(), UserWith1Key1Attribute()],
+        stage_data={"stg__stage": [{"user_id": "0", "age": 15, "time": TIME}]},
+        cursor=cursor,
     )
 
-    flow = Flow(source=Stage(), business_time_field=Stage.time).load(
-        UserIgnore(),
+    expected = [
+        {
+            "user_sk": md5("0"),
+            "age": 15,
+            "valid_from": TIME,
+            "_source": "stg__stage",
+        }
+    ]
+
+    flow = Flow(
+        source=StageWith5Columns(), business_time_field=StageWith5Columns.time
+    ).load(
+        UserWith1Key1Attribute(),
         mapping={
-            UserIgnore.user_id: Stage.user_id,
-            UserIgnore.name: Stage.name,
+            UserWith1Key1Attribute.user_id: StageWith5Columns.user_id,
+            UserWith1Key1Attribute.age: StageWith5Columns.age,
         },
     )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
-
     assert len(flow.tasks) == 2
-    assert expected_attribute_data == get_data("attr__user__name", sqlalchemy_engine)
+    assert get_rows("attr__user__age", cursor) == expected
 
-    # Add new data
-    stage_data = {
-        "user_id": ["user-id-0"],
-        "name": ["John Wick"],
-        "time": [TIME + timedelta(hours=1)],
-    }
-    init_dwh(hnhm=hnhm, engine=sqlalchemy_engine, stage_data={"stg__stage": stage_data})
+    insert_row(
+        "stg__stage",
+        {"user_id": "0", "age": 100, "time": TIME},
+        cursor,
+    )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    assert get_rows("attr__user__age", cursor) == expected
 
-    assert expected_attribute_data == get_data("attr__user__name", sqlalchemy_engine)
 
-
-def test_update(hnhm, sqlalchemy_engine):
-    class UserUpdate(User):
+def test_update(hnhm, cursor):
+    class UserUpdate(UserWith1Key1Attribute):
         """UserUpdate."""
 
-        name = String(comment="User name", change_type=ChangeType.UPDATE)
+        age = Integer(comment="User age", change_type=ChangeType.UPDATE)
 
-    stage_data = {
-        "user_id": ["user-id-0"],
-        "name": ["Mark Alonso"],
-        "time": [TIME],
-    }
-    expected_attribute_data = {
-        "user_sk": [md5("user-id-0")],
-        "name": ["Mark Alonso"],
-        "valid_from": [TIME],
-        "_source": ["stg__stage"],
-    }
     init_dwh(
         hnhm=hnhm,
-        engine=sqlalchemy_engine,
-        entities=[Stage(), UserUpdate()],
-        stage_data={"stg__stage": stage_data},
+        entities=[StageWith5Columns(), UserUpdate()],
+        stage_data={"stg__stage": [{"user_id": "0", "age": 15, "time": TIME}]},
+        cursor=cursor,
     )
 
-    flow = Flow(source=Stage(), business_time_field=Stage.time).load(
+    flow = Flow(
+        source=StageWith5Columns(), business_time_field=StageWith5Columns.time
+    ).load(
         UserUpdate(),
         mapping={
-            UserUpdate.user_id: Stage.user_id,
-            UserUpdate.name: Stage.name,
+            UserUpdate.user_id: StageWith5Columns.user_id,
+            UserUpdate.age: StageWith5Columns.age,
         },
     )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
-
     assert len(flow.tasks) == 2
-    assert expected_attribute_data == get_data("attr__user__name", sqlalchemy_engine)
+    assert get_rows("attr__user__age", cursor) == [
+        {
+            "user_sk": md5("0"),
+            "age": 15,
+            "valid_from": TIME,
+            "_source": "stg__stage",
+        }
+    ]
 
-    # Add new data
-    stage_data = {
-        "user_id": ["user-id-0"],
-        "name": ["John Wick"],
-        "time": [TIME + timedelta(hours=1)],
-    }
-    expected_attribute_data = {
-        "user_sk": [md5("user-id-0")],
-        "name": ["John Wick"],
-        "valid_from": [TIME + timedelta(hours=1)],
-        "_source": ["stg__stage"],
-    }
-    init_dwh(hnhm=hnhm, engine=sqlalchemy_engine, stage_data={"stg__stage": stage_data})
+    insert_row(
+        "stg__stage",
+        {"user_id": "0", "age": 100, "time": TIME + timedelta(hours=1)},
+        cursor,
+    )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    assert get_rows("attr__user__age", cursor) == [
+        {
+            "user_sk": md5("0"),
+            "age": 100,
+            "valid_from": TIME + timedelta(hours=1),
+            "_source": "stg__stage",
+        }
+    ]
 
-    assert expected_attribute_data == get_data("attr__user__name", sqlalchemy_engine)
 
-
-def test_new(hnhm, sqlalchemy_engine):
-    class UserNew(User):
+def test_new(hnhm, cursor):
+    class UserNew(UserWith1Key1Attribute):
         """UserNew."""
 
-        user_id = String(comment="User id", change_type=ChangeType.IGNORE)
-        name = String(comment="User name", change_type=ChangeType.NEW)
+        age = Integer(comment="User age", change_type=ChangeType.NEW)
 
-    stage_data = {
-        "user_id": ["user-id-0", "user-id-0"],
-        "name": ["Mark Alonso", "John Wick"],
-        "time": [TIME, TIME + timedelta(hours=10)],
-    }
-    expected_attribute_data = {
-        "user_sk": [md5("user-id-0"), md5("user-id-0")],
-        "name": ["Mark Alonso", "John Wick"],
-        "valid_from": [TIME, TIME + timedelta(hours=10)],
-        "valid_to": [TIME + timedelta(hours=10), TIME_INFINITY],
-        "_source": ["stg__stage", "stg__stage"],
-    }
     init_dwh(
         hnhm=hnhm,
-        engine=sqlalchemy_engine,
-        entities=[Stage(), UserNew()],
-        stage_data={"stg__stage": stage_data},
+        entities=[StageWith5Columns(), UserNew()],
+        stage_data={"stg__stage": [{"user_id": "0", "age": 15, "time": TIME}]},
+        cursor=cursor,
     )
 
-    flow = Flow(source=Stage(), business_time_field=Stage.time).load(
+    flow = Flow(
+        source=StageWith5Columns(), business_time_field=StageWith5Columns.time
+    ).load(
         UserNew(),
         mapping={
-            UserNew.user_id: Stage.user_id,
-            UserNew.name: Stage.name,
+            UserNew.user_id: StageWith5Columns.user_id,
+            UserNew.age: StageWith5Columns.age,
         },
     )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
 
     assert len(flow.tasks) == 2
-    assert expected_attribute_data == get_data(
-        "attr__user__name",
-        sqlalchemy_engine,
-        sort_by=["valid_from"],
-    )
+    assert get_rows("attr__user__age", cursor, order_by="valid_from") == [
+        {
+            "user_sk": md5("0"),
+            "age": 15,
+            "valid_from": TIME,
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+        }
+    ]
 
-    # Add data in the middle
-    stage_data = {
-        "user_id": ["user-id-0"],
-        "name": ["Late Name"],
-        "time": [TIME + timedelta(hours=5)],
-    }
-    expected_attribute_data = {
-        "user_sk": [
-            md5("user-id-0"),
-            md5("user-id-0"),
-            md5("user-id-0"),
-        ],
-        "name": [
-            "Mark Alonso",
-            "Late Name",
-            "John Wick",
-        ],
-        "valid_from": [
-            TIME,
-            TIME + timedelta(hours=5),
-            TIME + timedelta(hours=10),
-        ],
-        "valid_to": [
-            TIME + timedelta(hours=5),
-            TIME + timedelta(hours=10),
-            TIME_INFINITY,
-        ],
-        "_source": [
-            "stg__stage",
-            "stg__stage",
-            "stg__stage",
-        ],
-    }
-    init_dwh(hnhm=hnhm, engine=sqlalchemy_engine, stage_data={"stg__stage": stage_data})
+    insert_row(
+        "stg__stage",
+        {"user_id": "0", "age": 100, "time": TIME + timedelta(hours=24)},
+        cursor,
+    )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    assert get_rows("attr__user__age", cursor, order_by="valid_from") == [
+        {
+            "user_sk": md5("0"),
+            "age": 15,
+            "valid_from": TIME,
+            "valid_to": TIME + timedelta(hours=24),
+            "_source": "stg__stage",
+        },
+        {
+            "user_sk": md5("0"),
+            "age": 100,
+            "valid_from": TIME + timedelta(hours=24),
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+        },
+    ]
 
-    assert expected_attribute_data == get_data(
-        "attr__user__name",
-        sqlalchemy_engine,
-        sort_by=["valid_from"],
+    # Insert in the "middle"
+    insert_row(
+        "stg__stage",
+        {"user_id": "0", "age": 500, "time": TIME + timedelta(hours=10)},
+        cursor,
     )
+    for task in flow.tasks:
+        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    assert get_rows("attr__user__age", cursor, order_by="valid_from") == [
+        {
+            "user_sk": md5("0"),
+            "age": 15,
+            "valid_from": TIME,
+            "valid_to": TIME + timedelta(hours=10),
+            "_source": "stg__stage",
+        },
+        {
+            "user_sk": md5("0"),
+            "age": 500,
+            "valid_from": TIME + timedelta(hours=10),
+            "valid_to": TIME + timedelta(hours=24),
+            "_source": "stg__stage",
+        },
+        {
+            "user_sk": md5("0"),
+            "age": 100,
+            "valid_from": TIME + timedelta(hours=24),
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+        },
+    ]

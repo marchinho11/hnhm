@@ -11,3 +11,4 @@ htmlcov/
 .env
 
 state.json
+book

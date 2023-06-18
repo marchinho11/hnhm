@@ -1,21 +1,34 @@
-import sys
 import importlib
 
 import click
 
 from .core import HnhmError
-from .plan_printer import print_plan
 from .hnhm_registry import HnhmRegistry
+from .plan_printer import Color, print_plan
 
 
 def import_registry(module: str) -> HnhmRegistry:
-    sys.path.append(".")
+    if module == ".":
+        raise HnhmError(
+            "Importing from the current directory '.' is not supported. "
+            "Please, use the hnhm from the parent directory."
+        )
+
+    module = module.rstrip("/").lstrip("/")
+    module = f"{module}.__hnhm__"
+
+    click.secho(
+        f"Importing 'registry' object from the module: '{module}'.",
+        fg=Color.cyan,
+    )
+    click.secho()
     imported_module = importlib.import_module(module)
-    registry: HnhmRegistry = getattr(imported_module, "__registry__", None)
+
+    registry: HnhmRegistry = getattr(imported_module, "registry", None)
     if not registry:
         raise HnhmError(
             f"Failed to import registry from module: '{module}'."
-            " Please, specify your registry via __registry__ object in your DWH module."
+            " Please, specify your registry via 'registry' object in your DWH module."
         )
     return registry
 

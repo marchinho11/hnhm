@@ -1,74 +1,63 @@
-from tests.dwh import User, Stage
-from hnhm import Flow, String, ChangeType
-from tests.util import TIME, md5, get_data, init_dwh
+from hnhm import Flow
+from tests.util import TIME, md5, get_rows, init_dwh
+from tests.__hnhm__ import UserWith2Keys, StageWith5Columns, UserWith1Key1Attribute
 
 
-def test_single_pk(hnhm, sqlalchemy_engine):
-    stage_data = {
-        "user_id": ["user-id-0"],
-        "time": [TIME],
-    }
-    expected_hub_data = {
-        "user_sk": [md5("user-id-0")],
-        "user_id_bk": ["user-id-0"],
-        "valid_from": [TIME],
-        "_source": ["stg__stage"],
-    }
+def test_single_pk(hnhm, cursor):
     init_dwh(
         hnhm=hnhm,
-        engine=sqlalchemy_engine,
-        entities=[Stage(), User()],
-        stage_data={"stg__stage": stage_data},
+        entities=[StageWith5Columns(), UserWith1Key1Attribute()],
+        stage_data={"stg__stage": [{"user_id": "0", "time": TIME}]},
+        cursor=cursor,
     )
 
-    flow = Flow(source=Stage(), business_time_field=Stage.time).load(
-        User(),
-        mapping={User.user_id: Stage.user_id},
+    flow = Flow(
+        source=StageWith5Columns(), business_time_field=StageWith5Columns.time
+    ).load(
+        UserWith1Key1Attribute(),
+        mapping={UserWith1Key1Attribute.user_id: StageWith5Columns.user_id},
     )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
 
     assert len(flow.tasks) == 1
-    assert expected_hub_data == get_data("hub__user", sqlalchemy_engine)
+    assert get_rows("hub__user", cursor) == [
+        {
+            "user_sk": md5("0"),
+            "user_id_bk": "0",
+            "valid_from": TIME,
+            "_source": "stg__stage",
+        }
+    ]
 
 
-def test_composite_pk(hnhm, sqlalchemy_engine):
-    class UserCompositePK(User):
-        """UserCompositePK."""
-
-        user_id = String(comment="User id", change_type=ChangeType.IGNORE)
-        user_name = String(comment="User Name", change_type=ChangeType.IGNORE)
-
-        __keys__ = [user_id, user_name]
-
-    stage_data = {
-        "user_id": ["user-id-0"],
-        "name": ["Mark Alonso"],
-        "time": [TIME],
-    }
-    expected_hub_data = {
-        "user_sk": [md5("user-id-0-Mark Alonso")],
-        "user_id_bk": ["user-id-0"],
-        "user_name_bk": ["Mark Alonso"],
-        "valid_from": [TIME],
-        "_source": ["stg__stage"],
-    }
+def test_composite_pk(hnhm, cursor):
     init_dwh(
         hnhm=hnhm,
-        engine=sqlalchemy_engine,
-        entities=[Stage(), UserCompositePK()],
-        stage_data={"stg__stage": stage_data},
+        entities=[StageWith5Columns(), UserWith2Keys()],
+        stage_data={"stg__stage": [{"user_id": "0", "name": "Name", "time": TIME}]},
+        cursor=cursor,
     )
 
-    flow = Flow(source=Stage(), business_time_field=Stage.time).load(
-        UserCompositePK(),
+    flow = Flow(
+        source=StageWith5Columns(), business_time_field=StageWith5Columns.time
+    ).load(
+        UserWith2Keys(),
         mapping={
-            UserCompositePK.user_id: Stage.user_id,
-            UserCompositePK.user_name: Stage.name,
+            UserWith2Keys.user_id: StageWith5Columns.user_id,
+            UserWith2Keys.name: StageWith5Columns.name,
         },
     )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
 
     assert len(flow.tasks) == 1
-    assert expected_hub_data == get_data("hub__user", sqlalchemy_engine)
+    assert get_rows("hub__user", cursor) == [
+        {
+            "user_sk": md5("0-Name"),
+            "user_id_bk": "0",
+            "name_bk": "Name",
+            "valid_from": TIME,
+            "_source": "stg__stage",
+        }
+    ]

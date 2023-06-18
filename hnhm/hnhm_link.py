@@ -1,9 +1,8 @@
 import abc
 import inspect
 
-from hnhm.core import Link, Layout, HnhmError, LayoutType, LinkElement
-
 from .hnhm_entity import HnhmEntity
+from .core import Link, Layout, HnhmError, LayoutType, LinkElement
 
 
 class HnhmLinkElement:
@@ -44,16 +43,18 @@ class HnhmLink(abc.ABC):
 
         name = layout.name
 
+        fqn = name
+
         if not inspected.get("__doc__"):
             raise HnhmError(
-                f"Doc not found or empty for link: '{name}'."
+                f"Doc not found or empty for link: '{fqn}'."
                 " Please, write a documentation for your link."
             )
         doc: str = inspected["__doc__"]
 
         if not inspected.get("__keys__"):
             raise HnhmError(
-                f"At least one Key is required for link='{name}'."
+                f"At least one Key is required for '{fqn}'."
                 " Please, specify link's keys via the '__keys__' attribute."
             )
         keys_hnhm: list[HnhmEntity] = inspected["__keys__"]
@@ -68,11 +69,12 @@ class HnhmLink(abc.ABC):
 
         if len(elements) < 2:
             raise HnhmError(
-                f"At least two LinkElements are required for link='{name}'."
+                f"At least two LinkElements are required for '{fqn}'."
                 " Please, specify more than one elements."
             )
 
         return Link(
+            fqn=fqn,
             name=name,
             layout=layout,
             doc=doc,

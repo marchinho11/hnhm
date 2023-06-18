@@ -1,45 +1,24 @@
-from textwrap import dedent
-
 import jinja2
-from sqlalchemy import create_engine
-from sqlalchemy.engine import URL, Engine
+import psycopg2
 
-from hnhm.core import (
-    Sql,
-    Task,
-    Type,
-    LoadHub,
-    LoadLink,
-    HnhmError,
-    LoadGroup,
-    Migration,
-    ChangeType,
-    CreateLink,
-    LayoutType,
-    RemoveLink,
-    CreateGroup,
-    RemoveGroup,
-    CreateEntity,
-    RemoveEntity,
-    LoadAttribute,
-    CreateAttribute,
-    RemoveAttribute,
-    RemoveEntityView,
-    AddGroupAttribute,
-    RecreateEntityView,
-    RemoveGroupAttribute,
-)
+from ..core.attribute import Type
+from ..core import Sql, HnhmError, ChangeType, LayoutType, task, migration
 
 PG_TYPES = {
     Type.STRING: "TEXT",
     Type.INTEGER: "INTEGER",
+    Type.FLOAT: "DOUBLE PRECISION",
     Type.TIMESTAMP: "TIMESTAMPTZ",
 }
 
 
-def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment) -> str:
+def generate_sql(
+    migration_or_task: migration.Migration | task.Task, jinja: jinja2.Environment
+) -> str:
+    """Generates SQL for a given migration or task."""
+
     match migration_or_task:
-        case CreateEntity(entity=entity):
+        case migration.CreateEntity(entity=entity):
             if entity.layout.type == LayoutType.HNHM:
                 template = jinja.get_template("create_hub.sql")
                 columns = []
@@ -66,7 +45,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 columns_types=columns_types,
             )
 
-        case RecreateEntityView(entity=entity):
+        case migration.RecreateEntityView(entity=entity):
             template = jinja.get_template("update_entity_view.sql")
 
             view_name = f"entity__{entity.name}"
@@ -92,7 +71,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 groups=entity.groups.values(),
             )
 
-        case CreateAttribute(entity=entity, attribute=attribute):
+        case migration.CreateAttribute(entity=entity, attribute=attribute):
             attribute_type = PG_TYPES[attribute.type]
 
             if entity.layout.type == LayoutType.STAGE:
@@ -110,7 +89,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 time_columns=time_columns,
             )
 
-        case CreateGroup(entity=entity, group=group):
+        case migration.CreateGroup(entity=entity, group=group):
             columns = []
             for attribute in group.attributes.values():
                 column_type = PG_TYPES[attribute.type]
@@ -128,11 +107,11 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 time_columns=time_columns,
             )
 
-        case AddGroupAttribute(entity=entity, group=group, attribute=attribute):
+        case migration.AddGroupAttribute(entity=entity, group=group, attribute=attribute):
             attribute_type = PG_TYPES[attribute.type]
             return f"ALTER TABLE group__{entity.name}__{group.name} ADD COLUMN {attribute.name} {attribute_type}"
 
-        case CreateLink(link=link):
+        case migration.CreateLink(link=link):
             entities = []
             for link_element in link.elements:
                 entities.append(link_element.entity.name)
@@ -148,33 +127,35 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 primary_keys=primary_keys,
             )
 
-        case RemoveEntity(entity=entity):
+        case migration.RemoveEntity(entity=entity):
             if entity.layout.type == LayoutType.HNHM:
                 table_name = f"hub__{entity.name}"
             else:
                 table_name = f"stg__{entity.name}"
             return f"DROP TABLE {table_name}"
 
-        case RemoveAttribute(entity=entity, attribute=attribute):
+        case migration.RemoveAttribute(entity=entity, attribute=attribute):
             if entity.layout.type == LayoutType.STAGE:
                 return f"ALTER TABLE stg__{entity.name} DROP COLUMN {attribute.name}"
 
             return f"DROP TABLE attr__{entity.name}__{attribute.name}"
 
-        case RemoveGroup(entity=entity, group=group):
+        case migration.RemoveGroup(entity=entity, group=group):
             return f"DROP TABLE group__{entity.name}__{group.name}"
 
-        case RemoveGroupAttribute(entity=entity, group=group, attribute=attribute):
+        case migration.RemoveGroupAttribute(
+            entity=entity, group=group, attribute=attribute
+        ):
             return f"ALTER TABLE group__{entity.name}__{group.name} DROP COLUMN {attribute.name}"
 
-        case RemoveLink(link=link):
+        case migration.RemoveLink(link=link):
             return f"DROP TABLE link__{link.name}"
 
-        case RemoveEntityView(entity=entity):
+        case migration.RemoveEntityView(entity=entity):
             view_name = f"entity__{entity.name}"
             return f"DROP VIEW {view_name}"
 
-        case LoadHub(
+        case task.LoadHub(
             source=source,
             target=target,
             business_time_field=business_time_field,
@@ -197,7 +178,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 business_time_field=business_time_field.name,
             )
 
-        case LoadAttribute(
+        case task.LoadAttribute(
             source=source,
             target=target,
             business_time_field=business_time_field,
@@ -242,7 +223,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 extra_sks=[],
             )
 
-        case LoadGroup(
+        case task.LoadGroup(
             source=source,
             target=target,
             group=group,
@@ -291,7 +272,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
                 extra_sks=[],
             )
 
-        case LoadLink(
+        case task.LoadLink(
             source=source,
             link=link,
             business_time_field=business_time_field,
@@ -333,7 +314,7 @@ def generate_sql(migration_or_task: Migration | Task, jinja: jinja2.Environment)
             )
 
 
-class PostgresSqlalchemySql(Sql):
+class PostgresPsycopgSql(Sql):
     def __init__(
         self,
         *,
@@ -342,49 +323,52 @@ class PostgresSqlalchemySql(Sql):
         database: str = "postgres",
         user: str = "postgres",
         password: str | None = None,
-        engine: Engine | None = None,
     ):
-        if engine:
-            self.engine = engine
-        else:
-            connection_url = URL.create(
-                "postgresql+psycopg2",
-                username=user,
-                password=password,
-                host=host,
-                database=database,
-                port=port,
-            )
-            self.engine = create_engine(connection_url)
-
+        self.host = host
+        self.port = port
+        self.database = database
+        self.user = user
+        self.password = password
         self.jinja = jinja2.Environment(
             loader=jinja2.PackageLoader("hnhm.postgres", "sql_templates")
         )
         self.jinja.globals.update(zip=zip)
 
-    @classmethod
-    def with_engine(cls, engine: Engine):
-        if engine.url.drivername != "postgresql+psycopg2":
-            raise HnhmError(
-                f"Wrong driver name '{engine.url.drivername}'. Required: 'postgresql+psycopg2'."
-            )
-        return cls(engine=engine)
-
-    def generate_sql(self, migration_or_task: Migration | Task) -> str:
+    def generate_sql(self, migration_or_task: migration.Migration | task.Task) -> str:
         return generate_sql(migration_or_task, self.jinja)
 
-    def execute(self, sql: str, debug: bool = False):
-        if debug:
-            print(dedent(sql).strip())
+    def execute(self, sql: str):
+        connection = psycopg2.connect(
+            database=self.database,
+            user=self.user,
+            password=self.password,
+            port=self.port,
+            host=self.host,
+        )
+        cursor = connection.cursor()
 
-        conn = None
         try:
-            conn = self.engine.connect()
-            conn = conn.execution_options(isolation_level="AUTOCOMMIT")
-            conn.execute(sql)
+            cursor.execute(sql)
+            connection.commit()
         except Exception as e:
             raise e
         finally:
-            if conn:
-                conn.close()
-            self.engine.dispose()
+            cursor.close()
+            connection.close()
+
+    def execute_many(self, sql: str, values: list):
+        connection = psycopg2.connect(
+            database=self.database,
+            user=self.user,
+            password=self.password,
+            port=self.port,
+            host=self.host,
+        )
+        cursor = connection.cursor()
+
+        try:
+            cursor.executemany(sql, values)
+            connection.commit()
+        finally:
+            cursor.close()
+            connection.close()

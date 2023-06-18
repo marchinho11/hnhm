@@ -2,29 +2,9 @@ from enum import Enum
 
 import pydantic
 
-from hnhm.core import (
-    Sql,
-    Entity,
-    Storage,
-    HnhmError,
-    Migration,
-    CreateLink,
-    LayoutType,
-    RemoveLink,
-    CreateGroup,
-    RemoveGroup,
-    CreateEntity,
-    RemoveEntity,
-    CreateAttribute,
-    RemoveAttribute,
-    RemoveEntityView,
-    AddGroupAttribute,
-    RecreateEntityView,
-    RemoveGroupAttribute,
-)
-
 from .hnhm_link import HnhmLink
 from .hnhm_entity import HnhmEntity
+from .core import Sql, State, Entity, HnhmError, LayoutType, migration
 
 
 class PlanType(str, Enum):
@@ -35,7 +15,7 @@ class PlanType(str, Enum):
 
 class PlanCollection(pydantic.BaseModel):
     type: PlanType
-    migrations: list[Migration]
+    migrations: list[migration.Migration]
 
 
 class Plan(pydantic.BaseModel):
@@ -47,26 +27,29 @@ class Plan(pydantic.BaseModel):
 
     @property
     def migrations_all(self):
-        migrations: list[Migration] = []
+        migrations: list[migration.Migration] = []
+
         for collection in self.entities_migrations.values():
             migrations.extend(collection.migrations)
+
         for collection in self.links_migrations.values():
             migrations.extend(collection.migrations)
+
         migrations = sorted(migrations, key=lambda m: m.priority)
         return migrations
 
 
 class HnHm:
-    def __init__(self, *, sql: Sql, storage: Storage):
+    def __init__(self, *, sql: Sql, state: State):
         self.sql = sql
-        self.storage = storage
-        self.data = self.storage.load()
+        self.state = state
+        self.data = self.state.load()
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.storage.save(self.data)
+        self.state.save(self.data)
 
     def plan(
         self,
@@ -77,12 +60,12 @@ class HnHm:
         core_entities = {}
         for entity in entities or []:
             entity_core = entity.to_core()
-            core_entities[entity_core.name] = entity_core
+            core_entities[entity_core.fqn] = entity_core
 
         core_links = {}
         for link in links or []:
             link_core = link.to_core()
-            core_links[link_core.name] = link_core
+            core_links[link_core.fqn] = link_core
 
         plan = Plan(entities_migrations={}, links_migrations={})
 
@@ -92,49 +75,55 @@ class HnHm:
 
             # Entity's View: create/update if not exists
             if (
-                entity.name not in self.data.entities_views
+                entity.fqn not in self.data.entities_views
                 and entity.layout.type == LayoutType.HNHM
             ):
-                migrations.append(RecreateEntityView(entity=entity))
+                migrations.append(migration.RecreateEntityView(entity=entity))
 
             # Create Entity
-            if entity.name not in self.data.entities:
-                migrations.append(CreateEntity(entity=entity))
+            if entity.fqn not in self.data.entities:
+                migrations.append(migration.CreateEntity(entity=entity))
 
                 if entity.layout.type == LayoutType.HNHM:
                     # Create Attribute
                     for attribute in entity.attributes.values():
                         migrations.append(
-                            CreateAttribute(entity=entity, attribute=attribute)
+                            migration.CreateAttribute(entity=entity, attribute=attribute)
                         )
                     # Create Group
                     for group in entity.groups.values():
-                        migrations.append(CreateGroup(entity=entity, group=group))
+                        migrations.append(
+                            migration.CreateGroup(entity=entity, group=group)
+                        )
 
             if migrations:
-                plan.entities_migrations[entity.name] = PlanCollection(
+                plan.entities_migrations[entity.fqn] = PlanCollection(
                     type=PlanType.CREATE,
                     migrations=migrations,
                 )
 
         # Entity: create/remove/update Attribute/Group
         for entity in core_entities.values():
-            if entity.name not in self.data.entities:
+            if entity.fqn not in self.data.entities:
                 continue
 
-            attributes_state = self.data.entities[entity.name].attributes
-            groups_state = self.data.entities[entity.name].groups
+            attributes_state = self.data.entities[entity.fqn].attributes
+            groups_state = self.data.entities[entity.fqn].groups
 
             migrations = []
             # Create Attribute
             for attribute_name, attribute in entity.attributes.items():
                 if attribute_name not in attributes_state:
-                    migrations.append(CreateAttribute(entity=entity, attribute=attribute))
+                    migrations.append(
+                        migration.CreateAttribute(entity=entity, attribute=attribute)
+                    )
 
             # Remove Attribute
             for attribute_name, attribute in attributes_state.items():
                 if attribute_name not in entity.attributes:
-                    migrations.append(RemoveAttribute(entity=entity, attribute=attribute))
+                    migrations.append(
+                        migration.RemoveAttribute(entity=entity, attribute=attribute)
+                    )
 
             # Create/Update Group
             for group_name, group in entity.groups.items():
@@ -145,7 +134,7 @@ class HnHm:
                     for attribute_name, attribute in group.attributes.items():
                         if attribute_name not in group_state.attributes:
                             migrations.append(
-                                AddGroupAttribute(
+                                migration.AddGroupAttribute(
                                     entity=entity, group=group, attribute=attribute
                                 )
                             )
@@ -153,28 +142,28 @@ class HnHm:
                     for attribute_name, attribute in group_state.attributes.items():
                         if attribute_name not in group.attributes:
                             migrations.append(
-                                RemoveGroupAttribute(
+                                migration.RemoveGroupAttribute(
                                     entity=entity, group=group, attribute=attribute
                                 )
                             )
                 # Create
                 else:
-                    migrations.append(CreateGroup(entity=entity, group=group))
+                    migrations.append(migration.CreateGroup(entity=entity, group=group))
 
             # Remove Group
             for group_name, group in groups_state.items():
                 if group_name not in entity.groups:
-                    migrations.append(RemoveGroup(entity=entity, group=group))
+                    migrations.append(migration.RemoveGroup(entity=entity, group=group))
 
             if migrations:
                 if entity.layout.type == LayoutType.HNHM:
                     migrations.extend(
                         [
-                            RemoveEntityView(entity=entity),
-                            RecreateEntityView(entity=entity),
+                            migration.RemoveEntityView(entity=entity),
+                            migration.RecreateEntityView(entity=entity),
                         ]
                     )
-                plan.entities_migrations[entity.name] = PlanCollection(
+                plan.entities_migrations[entity.fqn] = PlanCollection(
                     type=PlanType.UPDATE,
                     migrations=migrations,
                 )
@@ -184,7 +173,7 @@ class HnHm:
             if link_name not in core_links:
                 plan.links_migrations[link_name] = PlanCollection(
                     type=PlanType.REMOVE,
-                    migrations=[RemoveLink(link=link)],
+                    migrations=[migration.RemoveLink(link=link)],
                 )
 
         # Entity: remove
@@ -193,20 +182,24 @@ class HnHm:
                 migrations = []
 
                 if entity.layout.type == LayoutType.HNHM:
-                    migrations.append(RemoveEntityView(entity=entity))
+                    migrations.append(migration.RemoveEntityView(entity=entity))
 
                     attributes_state = self.data.entities[entity_name].attributes
                     groups_state = self.data.entities[entity_name].groups
                     # Remove Attribute
                     for _, attribute_state in attributes_state.items():
                         migrations.append(
-                            RemoveAttribute(entity=entity, attribute=attribute_state)
+                            migration.RemoveAttribute(
+                                entity=entity, attribute=attribute_state
+                            )
                         )
                     # Remove Group
                     for group_name, group in groups_state.items():
-                        migrations.append(RemoveGroup(entity=entity, group=group))
+                        migrations.append(
+                            migration.RemoveGroup(entity=entity, group=group)
+                        )
 
-                migrations.append(RemoveEntity(entity=entity))
+                migrations.append(migration.RemoveEntity(entity=entity))
                 plan.entities_migrations[entity_name] = PlanCollection(
                     type=PlanType.REMOVE,
                     migrations=migrations,
@@ -215,20 +208,20 @@ class HnHm:
         # Link: create
         for link_name, link in core_links.items():
             if link_name not in self.data.links:
-                plan.links_migrations[link.name] = PlanCollection(
+                plan.links_migrations[link.fqn] = PlanCollection(
                     type=PlanType.CREATE,
-                    migrations=[CreateLink(link=link)],
+                    migrations=[migration.CreateLink(link=link)],
                 )
 
         return plan
 
     def apply(self, plan: Plan):
-        for migration in plan.migrations_all:
-            sql = self.sql.generate_sql(migration)
+        for plan_migration in plan.migrations_all:
+            sql = self.sql.generate_sql(plan_migration)
 
-            match migration:
-                case CreateEntity(entity=entity):
-                    self.data.check_entity_not_exists(entity.name)
+            match plan_migration:
+                case migration.CreateEntity(entity=entity):
+                    self.data.check_entity_not_exists(entity.fqn)
                     self.sql.execute(sql)
                     if entity.layout.type == LayoutType.HNHM:
                         attributes = {}
@@ -236,7 +229,8 @@ class HnHm:
                     else:
                         attributes = entity.attributes
                         groups = entity.groups
-                    self.data.entities[entity.name] = Entity(
+                    self.data.entities[entity.fqn] = Entity(
+                        fqn=entity.fqn,
                         name=entity.name,
                         layout=entity.layout,
                         doc=entity.doc,
@@ -245,72 +239,74 @@ class HnHm:
                         groups=groups,
                     )
 
-                case RemoveEntity(entity=entity):
-                    self.data.check_entity_exists(entity.name)
+                case migration.RemoveEntity(entity=entity):
+                    self.data.check_entity_exists(entity.fqn)
                     self.sql.execute(sql)
-                    del self.data.entities[entity.name]
+                    del self.data.entities[entity.fqn]
 
-                case RecreateEntityView(entity=entity):
+                case migration.RecreateEntityView(entity=entity):
                     self.sql.execute(sql)
-                    self.data.entities_views.add(entity.name)
+                    self.data.entities_views.add(entity.fqn)
 
-                case RemoveEntityView(entity=entity):
-                    if entity.name not in self.data.entities_views:
-                        raise HnhmError(f"Entity's View '{entity.name}' doesn't exist.")
+                case migration.RemoveEntityView(entity=entity):
+                    if entity.fqn not in self.data.entities_views:
+                        raise HnhmError(f"Entity's View '{entity.fqn}' doesn't exist.")
                     self.sql.execute(sql)
-                    self.data.entities_views.remove(entity.name)
+                    self.data.entities_views.remove(entity.fqn)
 
-                case CreateAttribute(entity=entity, attribute=attribute):
-                    self.data.check_attribute_not_exists(entity.name, attribute.name)
+                case migration.CreateAttribute(entity=entity, attribute=attribute):
+                    self.data.check_attribute_not_exists(entity.fqn, attribute.name)
                     self.sql.execute(sql)
-                    self.data.entities[entity.name].attributes[attribute.name] = attribute
+                    self.data.entities[entity.fqn].attributes[attribute.name] = attribute
 
-                case RemoveAttribute(entity=entity, attribute=attribute):
-                    self.data.check_attribute_exists(entity.name, attribute.name)
+                case migration.RemoveAttribute(entity=entity, attribute=attribute):
+                    self.data.check_attribute_exists(entity.fqn, attribute.name)
                     self.sql.execute(sql)
-                    del self.data.entities[entity.name].attributes[attribute.name]
+                    del self.data.entities[entity.fqn].attributes[attribute.name]
 
-                case CreateGroup(entity=entity, group=group):
-                    self.data.check_group_not_exists(entity.name, group.name)
+                case migration.CreateGroup(entity=entity, group=group):
+                    self.data.check_group_not_exists(entity.fqn, group.name)
                     self.sql.execute(sql)
-                    self.data.entities[entity.name].groups[group.name] = group
+                    self.data.entities[entity.fqn].groups[group.name] = group
 
-                case RemoveGroup(entity=entity, group=group):
-                    self.data.check_group_exists(entity.name, group.name)
+                case migration.RemoveGroup(entity=entity, group=group):
+                    self.data.check_group_exists(entity.fqn, group.name)
                     self.sql.execute(sql)
-                    del self.data.entities[entity.name].groups[group.name]
+                    del self.data.entities[entity.fqn].groups[group.name]
 
-                case AddGroupAttribute(entity=entity, group=group, attribute=attribute):
+                case migration.AddGroupAttribute(
+                    entity=entity, group=group, attribute=attribute
+                ):
                     self.data.check_group_attribute_not_exists(
-                        entity.name, group.name, attribute.name
+                        entity.fqn, group.name, attribute.name
                     )
                     self.sql.execute(sql)
-                    self.data.entities[entity.name].groups[group.name].attributes[
+                    self.data.entities[entity.fqn].groups[group.name].attributes[
                         attribute.name
                     ] = attribute
 
-                case RemoveGroupAttribute(
+                case migration.RemoveGroupAttribute(
                     entity=entity, group=group, attribute=attribute
                 ):
                     self.data.check_group_attribute_exists(
-                        entity.name, group.name, attribute.name
+                        entity.fqn, group.name, attribute.name
                     )
                     self.sql.execute(sql)
                     del (
-                        self.data.entities[entity.name]
+                        self.data.entities[entity.fqn]
                         .groups[group.name]
                         .attributes[attribute.name]
                     )
 
-                case CreateLink(link=link):
-                    self.data.check_link_not_exists(link.name)
+                case migration.CreateLink(link=link):
+                    self.data.check_link_not_exists(link.fqn)
                     self.sql.execute(sql)
-                    self.data.links[link.name] = link
+                    self.data.links[link.fqn] = link
 
-                case RemoveLink(link=link):
-                    self.data.check_link_exists(link.name)
+                case migration.RemoveLink(link=link):
+                    self.data.check_link_exists(link.fqn)
                     self.sql.execute(sql)
-                    del self.data.links[link.name]
+                    del self.data.links[link.fqn]
 
                 case _:
                     raise HnhmError(f"Unknown migration: '{migration}'")

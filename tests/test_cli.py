@@ -2,8 +2,12 @@ import pytest
 from click.testing import CliRunner
 
 import hnhm.cli as hnhm_cli
-from hnhm import HnhmError
-from tests.dwh import User, Stage, Review, UserReview
+from tests.__hnhm__ import (
+    UserWith1Key,
+    ReviewWith1Key,
+    StageWith5Columns,
+    LinkUserReviewWith2Keys,
+)
 
 
 @pytest.fixture
@@ -14,35 +18,35 @@ def cli_runner() -> CliRunner:
 
 
 def test_import_registry():
-    registry = hnhm_cli.import_registry("tests.dwh")
+    registry = hnhm_cli.import_registry("tests")
     assert registry
 
 
 def test_import_registry_failed():
     with pytest.raises(
-        HnhmError,
-        match=(
-            f"Failed to import registry from module: 'tests.util'."
-            " Please, specify your registry via __registry__ object in your DWH module."
-        ),
+        ModuleNotFoundError,
+        match="No module named 'tests.util.__hnhm__'; 'tests.util' is not a package",
     ):
         hnhm_cli.import_registry("tests.util")
 
 
 def test_plan(cli_runner):
-    result = cli_runner.invoke(hnhm_cli.cli, ["plan", "tests.dwh"])
+    result = cli_runner.invoke(hnhm_cli.cli, ["plan", "tests"])
     assert result.exit_code == 0
 
 
 def test_apply(cli_runner):
-    result = cli_runner.invoke(hnhm_cli.cli, ["apply", "-y", "tests.dwh"])
+    result = cli_runner.invoke(hnhm_cli.cli, ["apply", "-y", "tests"])
     assert result.exit_code == 0
 
 
 def test_print_plan(hnhm):
     """Just test it prints the plan without checking the output."""
     with hnhm:
-        plan = hnhm.plan(entities=[Review(), Stage(), User()], links=[UserReview()])
+        plan = hnhm.plan(
+            entities=[ReviewWith1Key(), StageWith5Columns(), UserWith1Key()],
+            links=[LinkUserReviewWith2Keys()],
+        )
         hnhm_cli.print_plan(plan)
         hnhm.apply(plan)
 

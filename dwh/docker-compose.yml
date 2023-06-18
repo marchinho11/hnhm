@@ -1,0 +1,16 @@
+version: "3.9"
+
+volumes:
+  postgres_data: { }
+
+services:
+  postgres:
+    image: postgres:15
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: coinmarket
+      POSTGRES_USER: hnhm
+      POSTGRES_PASSWORD: 123
