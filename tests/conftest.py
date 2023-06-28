@@ -23,7 +23,7 @@ def generate_random_db_name(size=16, chars=string.ascii_lowercase):
 def postgres_db() -> str:
     random_db_name = generate_random_db_name()
 
-    connection = psycopg2.connect(database=PG_DB, user=PG_USER)
+    connection = psycopg2.connect(database=PG_DB, user=PG_USER, host="localhost", port=5432)
     connection.autocommit = True
 
     cursor = connection.cursor()
@@ -50,7 +50,7 @@ def hnhm(postgres_db) -> HnHm:
 
 @pytest.fixture
 def cursor(postgres_db):
-    connection = psycopg2.connect(database=postgres_db, user=PG_USER)
+    connection = psycopg2.connect(database=postgres_db, user=PG_USER, host="localhost", port=5432)
     connection.autocommit = True
     cursor = connection.cursor()
     try:
