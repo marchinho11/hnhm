@@ -1,0 +1,23 @@
+on: # todo
+  pull_request:
+    branches:
+      - "main"
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - run: poetry install
+
+      - run: poetry run pydoc-markdown
+
+      - run: poetry run mkdocs gh-deploy --force
+        working-directory: docs/build

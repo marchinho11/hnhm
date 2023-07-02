@@ -10,8 +10,6 @@
 [1) Yandex Report, habr.com](https://habr.com/ru/company/yandex/blog/557140/). [2) SmartData Conference, youtube.com](https://youtu.be/2fPqDvHsd0w)
 * [Basic hNhM concepts](#basic-hnhm-concepts)
 * [Quick Start](#quick-start)
-* [DWH example](#dwh-example)
-* [Guide](#guide)
 
 ### Basic hNhM concepts
 **Logical level**
