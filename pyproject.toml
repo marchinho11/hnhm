@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hnhm"
-version = "0.0.7"
+version = "0.0.8"
 readme = "README.md"
 description = "hNhM – highly Normalized hybrid Model."
 authors = ["Arseny Egorov <egoroff-ars@yandex.ru>"]
