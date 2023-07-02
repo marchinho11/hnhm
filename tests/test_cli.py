@@ -1,7 +1,11 @@
+import os
+import tempfile
+
 import pytest
 from click.testing import CliRunner
 
 import hnhm.cli as hnhm_cli
+from hnhm import HnhmError
 from tests.__hnhm__ import (
     UserWith1Key,
     ReviewWith1Key,
@@ -28,6 +32,35 @@ def test_import_registry_failed():
         match="No module named 'tests.util.__hnhm__'; 'tests.util' is not a package",
     ):
         hnhm_cli.import_registry("tests.util")
+
+
+def test_import_registry_failed_dot():
+    with pytest.raises(
+        HnhmError,
+        match=(
+            "Importing from the current directory '.' is not supported. "
+            "Please, use the hnhm from the parent directory."
+        ),
+    ):
+        hnhm_cli.import_registry(".")
+
+
+def test_import_registry_failed__no_registry_obj():
+    with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmp:
+        path = os.path.join(tmp, "__hnhm__.py")
+        with open(path, "w") as f:
+            f.write("import hnhm")
+
+        module = tmp.split("/")[-1]
+
+        with pytest.raises(
+            HnhmError,
+            match=(
+                f"Failed to import registry from module: '{module}.__hnhm__'."
+                " Please, specify your registry via 'registry' object in your DWH module."
+            ),
+        ):
+            hnhm_cli.import_registry(module)
 
 
 def test_plan(cli_runner):

@@ -1,11 +1,40 @@
-# Setup Postgres
-Create a directory for the guide:
-```shell
-mkdir hnhm_guide
-cd hnhm_guide
+# Setup
+## Setup CoinMarket account
+[Create](https://coinmarketcap.com/api/) free account to work with the CoinMarket API.
+
+## Setup Python
+* Create a directory for the guide:
+   ```shell
+   mkdir hnhm_guide
+   cd hnhm_guide
+   ```
+* Install Python with version `>= 3.10`.
+* Create virtualenv (personally, I prefer [poetry](https://python-poetry.org/)):
+   ```shell
+   python3.10 -m virtualenv venv
+   source ./venv/bin/activate
+   ```
+* Create the file `requirements.txt`:
+   ```text
+   # requirements.txt
+   requests==2.31.0
+   hnhm
+   ```
+* Install packages:
+   ```shell
+   pip install -r requirements.txt
+   ```
+
+File layout at the end of current step:
+```
+.
+├── requirements.txt
+└── venv
 ```
 
+## Setup Postgres
 Let's set up Postgres database. You could use the following `docker-compose.yml` file to run Postgres:
+
 ```yaml
 # docker-compose.yml 
 version: "3.9"
@@ -21,7 +50,7 @@ services:
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_DB: hnhm
+      POSTGRES_DB: coinmarket
       POSTGRES_USER: hnhm
       POSTGRES_PASSWORD: 123
 ```
@@ -36,9 +65,9 @@ docker-compose up -d
 #  ✔ Container hnhm_guide-postgres-1    Started
 ```
 
-Now you should have access to the `hnhm` database:
+Now you should have access to the `coinmarket` database:
 ```shell
-psql -h localhost -p 5433 -U hnhm hnhm
+psql -h localhost -p 5433 -U hnhm coinmarket
 # Password for user hnhm: 123
 
 ~# \dt
@@ -48,5 +77,7 @@ psql -h localhost -p 5433 -U hnhm hnhm
 File layout at the end of current step:
 ```
 .
-└── docker-compose.yml
+├── docker-compose.yml
+├── requirements.txt
+└── venv
 ```

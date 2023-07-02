@@ -4,10 +4,12 @@ import string
 
 import pytest
 import psycopg2
+from psycopg2.extensions import cursor as Cursor
 
 from hnhm.core.state import InMemState
 from hnhm import HnHm, PostgresPsycopgSql
 
+PG_HOST = "localhost"
 PG_USER = os.getenv("PG_USER", "mark")
 
 # Used only to create database with random name for tests
@@ -23,12 +25,7 @@ def generate_random_db_name(size=16, chars=string.ascii_lowercase):
 def postgres_db() -> str:
     random_db_name = generate_random_db_name()
 
-    connection = psycopg2.connect(
-        database=PG_DB,
-        user=PG_USER,
-        host="localhost",
-        port=5432,
-    )
+    connection = psycopg2.connect(database=PG_DB, user=PG_USER, host=PG_HOST)
     connection.autocommit = True
 
     cursor = connection.cursor()
@@ -54,13 +51,8 @@ def hnhm(postgres_db) -> HnHm:
 
 
 @pytest.fixture
-def cursor(postgres_db):
-    connection = psycopg2.connect(
-        database=postgres_db,
-        user=PG_USER,
-        host="localhost",
-        port=5432,
-    )
+def cursor(postgres_db) -> Cursor:
+    connection = psycopg2.connect(database=postgres_db, user=PG_USER, host=PG_HOST)
     connection.autocommit = True
     cursor = connection.cursor()
     try:

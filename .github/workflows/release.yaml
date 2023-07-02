@@ -1,11 +1,11 @@
 name: "Release"
 
 on:
-  push:
-    tags: [ "*.*.*" ]
+  release:
+    types: [ published ]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:

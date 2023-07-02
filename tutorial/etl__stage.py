@@ -1,4 +1,4 @@
-from dwh.__hnhm__ import sql
+from tutorial.__hnhm__ import sql
 
 
 def stage():

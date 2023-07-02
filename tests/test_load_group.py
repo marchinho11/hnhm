@@ -1,4 +1,3 @@
-"""TODO: broken test for NEW"""
 from datetime import timedelta
 
 from hnhm import Flow, String, Integer, ChangeType
@@ -180,80 +179,79 @@ class GroupNew(UserWith1Key):
     )
 
 
-#
-#
-# def test_new(hnhm, cursor):
-#     init_dwh(
-#         hnhm=hnhm,
-#         entities=[StageWith5Columns(), GroupNew()],
-#         stage_data={
-#             "stg__stage": [
-#                 {
-#                     "user_id": "0",
-#                     "name": "Mark",
-#                     "age": 100,
-#                     "time": TIME,
-#                 }
-#             ]
-#         },
-#         cursor=cursor,
-#     )
-#
-#     flow = Flow(
-#         source=StageWith5Columns(), business_time_field=StageWith5Columns.time
-#     ).load(
-#         GroupNew(),
-#         mapping={
-#             GroupNew.user_id: StageWith5Columns.user_id,
-#             GroupNew.name: StageWith5Columns.name,
-#             GroupNew.age: StageWith5Columns.age,
-#         },
-#     )
-#     for task in flow.tasks:
-#         hnhm.sql.execute(hnhm.sql.generate_sql(task))
-#
-#     assert len(flow.tasks) == 2
-#     assert get_rows("group__user__user_data", cursor) == [
-#         {
-#             "user_sk": md5("0"),
-#             "name": "Mark",
-#             "age": 100,
-#             "valid_from": TIME,
-#             "_source": "stg__stage",
-#         }
-#     ]
-#
-#     # Add new data
-#     insert_row(
-#         "stg__stage",
-#         {
-#             "user_id": "0",
-#             "name": "John",
-#             "age": 23,
-#             "time": TIME + timedelta(hours=1),
-#         },
-#         cursor,
-#     )
-#
-#     for task in flow.tasks:
-#         hnhm.sql.execute(hnhm.sql.generate_sql(task))
-#
-#     assert len(flow.tasks) == 2
-#     assert get_rows("group__user__user_data", cursor, order_by="valid_from") == [
-#         {
-#             "user_sk": md5("0"),
-#             "name": "Mark",
-#             "age": 100,
-#             "valid_from": TIME,
-#             "valid_to": TIME + timedelta(hours=1),
-#             "_source": "stg__stage",
-#         },
-#         {
-#             "user_sk": md5("0"),
-#             "name": "John",
-#             "age": 23,
-#             "valid_from": TIME + timedelta(hours=1),
-#             "valid_to": TIME_INFINITY,
-#             "_source": "stg__stage",
-#         },
-#     ]
+def test_new(hnhm, cursor):
+    init_dwh(
+        hnhm=hnhm,
+        entities=[StageWith5Columns(), GroupNew()],
+        stage_data={
+            "stg__stage": [
+                {
+                    "user_id": "0",
+                    "name": "Mark",
+                    "age": 100,
+                    "time": TIME,
+                }
+            ]
+        },
+        cursor=cursor,
+    )
+
+    flow = Flow(
+        source=StageWith5Columns(), business_time_field=StageWith5Columns.time
+    ).load(
+        GroupNew(),
+        mapping={
+            GroupNew.user_id: StageWith5Columns.user_id,
+            GroupNew.name: StageWith5Columns.name,
+            GroupNew.age: StageWith5Columns.age,
+        },
+    )
+    for task in flow.tasks:
+        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+
+    assert len(flow.tasks) == 2
+    assert get_rows("group__user__user_data", cursor) == [
+        {
+            "user_sk": md5("0"),
+            "name": "Mark",
+            "age": 100,
+            "valid_from": TIME,
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+        }
+    ]
+
+    # Add new data
+    insert_row(
+        "stg__stage",
+        {
+            "user_id": "0",
+            "name": "John",
+            "age": 23,
+            "time": TIME + timedelta(hours=1),
+        },
+        cursor,
+    )
+
+    for task in flow.tasks:
+        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+
+    assert len(flow.tasks) == 2
+    assert get_rows("group__user__user_data", cursor, order_by="valid_from") == [
+        {
+            "user_sk": md5("0"),
+            "name": "Mark",
+            "age": 100,
+            "valid_from": TIME,
+            "valid_to": TIME + timedelta(hours=1),
+            "_source": "stg__stage",
+        },
+        {
+            "user_sk": md5("0"),
+            "name": "John",
+            "age": 23,
+            "valid_from": TIME + timedelta(hours=1),
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+        },
+    ]

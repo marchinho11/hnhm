@@ -1,9 +1,0 @@
-[book]
-title = "hNhM book"
-authors = ["Arseny Egorov"]
-src = "docs"
-language = "en"
-multilingual = false
-
-[build]
-build-dir = "book"

@@ -1,9 +1,11 @@
+import os
+
 import requests
 from psycopg2.extras import Json
 
-from dwh.__hnhm__ import sql
+from tutorial.__hnhm__ import sql
 
-COINMARKET_TOKEN = "<TOKEN>"
+COINMARKET_TOKEN = os.environ["COINMARKET_TOKEN"]
 
 
 def get_listings() -> list[dict]:

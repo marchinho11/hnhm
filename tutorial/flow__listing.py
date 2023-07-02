@@ -1,8 +1,8 @@
 from __hnhm__ import sql
 
 from hnhm import Flow
-from dwh.hnhm__listing import Listing
-from dwh.stage__listing import ListingStage
+from tutorial.hnhm__listing import Listing
+from tutorial.stage__listing import ListingStage
 
 flow = Flow(source=ListingStage(), business_time_field=ListingStage.timestamp).load(
     Listing(),
