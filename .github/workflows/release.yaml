@@ -8,6 +8,9 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   lint:
     uses: ./.github/workflows/lint.yaml
@@ -33,3 +36,7 @@ jobs:
       - run: poetry build
       - run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
       - run: poetry publish
+
+  docs:
+    needs: [ pypi ]
+    uses: ./.github/workflows/docs.yaml
