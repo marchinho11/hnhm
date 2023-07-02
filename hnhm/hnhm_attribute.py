@@ -1,6 +1,7 @@
 import abc
 
-from hnhm.core import Type, Attribute, ChangeType
+from .core.attribute import Type
+from .core import Attribute, ChangeType
 
 
 class HnhmAttribute(abc.ABC):
@@ -38,6 +39,10 @@ class String(HnhmAttribute):
 
 class Integer(HnhmAttribute):
     type = Type.INTEGER
+
+
+class Float(HnhmAttribute):
+    type = Type.FLOAT
 
 
 class Timestamp(HnhmAttribute):

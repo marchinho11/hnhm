@@ -4,28 +4,14 @@ import click
 import pydantic
 
 from .hnhm import Plan, PlanType
-from .core import (
-    HnhmError,
-    CreateLink,
-    LayoutType,
-    RemoveLink,
-    CreateGroup,
-    RemoveGroup,
-    CreateEntity,
-    RemoveEntity,
-    CreateAttribute,
-    RemoveAttribute,
-    RemoveEntityView,
-    AddGroupAttribute,
-    RecreateEntityView,
-    RemoveGroupAttribute,
-)
+from .core import HnhmError, LayoutType, migration
 
 
 class Color(str, Enum):
     green = "green"
     red = "red"
     yellow = "yellow"
+    cyan = "cyan"
 
 
 class PlanLine(pydantic.BaseModel):
@@ -43,7 +29,7 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
     links_migrations = sorted(plan.links_migrations.items(), key=lambda kv: kv[0])
 
     lines.append(PlanLine(text="Plan:"))
-    for entity_name, plan_collection in entities_migrations:
+    for entity_fqn, plan_collection in entities_migrations:
         if plan_collection.type == PlanType.CREATE:
             symbol, color = "+", Color.green
         elif plan_collection.type == PlanType.REMOVE:
@@ -54,10 +40,10 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
             raise HnhmError()
 
         lines.append(PlanLine(text=""))
-        lines.append(PlanLine(text=f"{symbol} entity '{entity_name}'", color=color))
+        lines.append(PlanLine(text=f"{symbol} entity '{entity_fqn}'", color=color))
         for entity_migration in plan_collection.migrations:
             match entity_migration:
-                case CreateEntity(entity=entity):
+                case migration.CreateEntity(entity=entity):
                     if entity.layout.type == LayoutType.HNHM:
                         lines.append(
                             PlanLine(text=f"  + hub '{entity.name}'", color=Color.green)
@@ -74,19 +60,19 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                                 )
                             )
 
-                case RecreateEntityView(entity=entity):
+                case migration.RecreateEntityView(entity=entity):
                     lines.append(
                         PlanLine(text=f"  {symbol} view '{entity.name}'", color=color)
                     )
 
-                case CreateAttribute(entity=_, attribute=attribute):
+                case migration.CreateAttribute(entity=_, attribute=attribute):
                     lines.append(
                         PlanLine(
                             text=f"  + attribute '{attribute.name}'", color=Color.green
                         )
                     )
 
-                case CreateGroup(entity=_, group=group):
+                case migration.CreateGroup(entity=_, group=group):
                     lines.append(
                         PlanLine(text=f"  + group '{group.name}'", color=Color.green)
                     )
@@ -98,7 +84,9 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                             )
                         )
 
-                case AddGroupAttribute(entity=_, group=group, attribute=attribute):
+                case migration.AddGroupAttribute(
+                    entity=_, group=group, attribute=attribute
+                ):
                     lines.append(
                         PlanLine(text=f"  [u] group '{group.name}'", color=Color.yellow)
                     )
@@ -108,7 +96,7 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                         )
                     )
 
-                case RemoveEntity(entity=entity):
+                case migration.RemoveEntity(entity=entity):
                     if entity.layout.type == LayoutType.HNHM:
                         lines.append(
                             PlanLine(text=f"  - hub '{entity.name}'", color=Color.red)
@@ -125,20 +113,20 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                                 )
                             )
 
-                case RemoveEntityView(entity=entity):
+                case migration.RemoveEntityView(entity=entity):
                     if plan_collection.type == PlanType.REMOVE:
                         lines.append(
                             PlanLine(text=f"  - view '{entity.name}'", color=Color.red)
                         )
 
-                case RemoveAttribute(entity=_, attribute=attribute):
+                case migration.RemoveAttribute(entity=_, attribute=attribute):
                     lines.append(
                         PlanLine(
                             text=f"  - attribute '{attribute.name}'", color=Color.red
                         )
                     )
 
-                case RemoveGroup(entity=_, group=group):
+                case migration.RemoveGroup(entity=_, group=group):
                     lines.append(
                         PlanLine(text=f"  - group '{group.name}'", color=Color.red)
                     )
@@ -150,7 +138,9 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                             )
                         )
 
-                case RemoveGroupAttribute(entity=_, group=group, attribute=attribute):
+                case migration.RemoveGroupAttribute(
+                    entity=_, group=group, attribute=attribute
+                ):
                     lines.append(
                         PlanLine(text=f"  [u] group '{group.name}'", color=Color.yellow)
                     )
@@ -160,7 +150,7 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
                         )
                     )
 
-    for link_name, plan_collection in links_migrations:
+    for link_fqn, plan_collection in links_migrations:
         if plan_collection.type == PlanType.CREATE:
             symbol, color = "+", Color.green
         elif plan_collection.type == PlanType.REMOVE:
@@ -169,17 +159,17 @@ def lines_from_plan(plan: Plan) -> list[PlanLine]:
             raise HnhmError()
 
         lines.append(PlanLine(text=""))
-        lines.append(PlanLine(text=f"{symbol} link '{link_name}'", color=color))
+        lines.append(PlanLine(text=f"{symbol} link '{link_fqn}'", color=color))
         for link_migration in plan_collection.migrations:
             match link_migration:
-                case RemoveLink(link=link):
+                case migration.RemoveLink(link=link):
                     for element in link.elements:
                         lines.append(
                             PlanLine(
                                 text=f"  |element '{element.entity.name}'", color=color
                             )
                         )
-                case CreateLink(link=link):
+                case migration.CreateLink(link=link):
                     for element in link.elements:
                         lines.append(
                             PlanLine(

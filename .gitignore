@@ -11,3 +11,6 @@ htmlcov/
 .env
 
 state.json
+coinmarket.json
+
+docs/build

@@ -1,12 +1,15 @@
 name: "Release"
 
 on:
-  push:
-    tags: [ "*.*.*" ]
+  release:
+    types: [ published ]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}
   cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
   lint:
@@ -33,3 +36,7 @@ jobs:
       - run: poetry build
       - run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
       - run: poetry publish
+
+  docs:
+    needs: [ pypi ]
+    uses: ./.github/workflows/docs.yaml

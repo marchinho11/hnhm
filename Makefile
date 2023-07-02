@@ -6,3 +6,6 @@ test:
 
 lines:
 	@poetry run pygount --format=summary --suffix=py hnhm/
+
+lines-all:
+	@poetry run pygount --format=summary --suffix=py hnhm/ tests/

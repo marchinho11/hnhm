@@ -23,6 +23,7 @@ class LinkElement(pydantic.BaseModel):
 class Link(pydantic.BaseModel):
     """Link core representation."""
 
+    fqn: str
     name: str
     doc: str
     layout: Layout
@@ -30,4 +31,4 @@ class Link(pydantic.BaseModel):
     keys: list[LinkElement]
 
     def __str__(self):
-        return f"<Link '{self.name}' layout='{self.layout}'>"
+        return f"<Link '{self.fqn}' layout='{self.layout}'>"

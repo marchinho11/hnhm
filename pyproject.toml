@@ -1,24 +1,32 @@
 [tool.poetry]
 name = "hnhm"
 version = "0.0.7"
+readme = "README.md"
 description = "hNhM – highly Normalized hybrid Model."
 authors = ["Arseny Egorov <egoroff-ars@yandex.ru>"]
+keywords = ["hnhm", "datavault", "anchormodeling", "python"]
+
+[project.urls]
+homepage = "https://marchinho11.github.io/hnhm"
+repository = "https://github.com/marchinho11/hnhm"
+documentation = "https://marchinho11.github.io/hnhm"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = "1.10.7"
+pydantic = "1.10.9"
 click = "8.1.3"
 Jinja2 = "3.1.2"
-SQLAlchemy = "1.4.48"
 psycopg2-binary = "2.9.6"
 
-[tool.poetry.dev-dependencies]
-pre-commit = "3.3.2"
-pytest = "7.3.1"
-pytest-cov = "4.0.0"
-pygount = "1.5.1"
-pandas = "2.0.1"
-pytest-env = "0.8.1"
+[tool.poetry.group.dev.dependencies]
+pydoc-markdown = "4.8.2"
+pre-commit = "3.3.3"
+pytest = "7.4.0"
+pytest-cov = "4.1.0"
+pygount = "1.6.0"
+pytest-env = "0.8.2"
+mkdocs = "1.4.3"
+mkdocs-material = "9.1.17"
 
 [tool.poetry.scripts]
 hnhm = "hnhm.cli:cli"
@@ -26,7 +34,6 @@ hnhm = "hnhm.cli:cli"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.black]
 line-length = 90
@@ -36,8 +43,3 @@ target-version = ["py310"]
 profile = "black"
 length_sort = true
 force_sort_within_sections = true
-
-[tool.pytest.ini_options]
-env = [
-    "SQLALCHEMY_SILENCE_UBER_WARNING=1"
-]

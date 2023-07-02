@@ -1,0 +1,69 @@
+# Thanks @roman-right for example from the https://github.com/roman-right/beanie repo
+loaders:
+  - type: python
+processors:
+  - type: filter
+  - type: smart
+  - type: crossref
+
+hooks:
+  pre-render:
+    - mkdir -p docs/build/content
+    - cp -r docs/assets docs/build/content
+
+renderer:
+  type: mkdocs
+  output_directory: docs/build
+  mkdocs_config:
+    site_name: hNhM Book
+    site_url: https://marchinho11.github.io/hnhm/
+    theme:
+      name: material
+      palette:
+        - scheme: default
+          primary: white
+          toggle:
+            icon: material/toggle-switch
+            name: Switch to dark mode
+        - scheme: slate
+          toggle:
+            icon: material/toggle-switch-off-outline
+            name: Switch to light mode
+      logo: assets/logo.png
+      favicon: assets/favicon.png
+    extra_css:
+      - assets/color_scheme.css
+    markdown_extensions:
+      - pymdownx.highlight
+      - pymdownx.superfences
+
+    repo_url: https://github.com/marchinho11/hnhm
+
+  markdown:
+    use_fixed_header_levels: true
+    header_level_by_type:
+      Module: 2
+      Class: 3
+      Method: 4
+      Function: 4
+      Data: 4
+    descriptive_class_title: false
+    descriptive_module_title: false
+    add_method_class_prefix: true
+    add_member_class_prefix: true
+    docstrings_as_blockquote: true
+
+  pages:
+    - title: Overview
+      name: index
+      source: docs/index.md
+    - title: Tutorial
+      children:
+        - title: Intro
+          source: docs/tutorial/intro.md
+        - title: Setup
+          source: docs/tutorial/setup.md
+        - title: Init HnHm
+          source: docs/tutorial/init-hnhm.md
+        - title: Raw Data
+          source: docs/tutorial/raw-data.md

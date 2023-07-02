@@ -3,14 +3,17 @@ import random
 import string
 
 import pytest
-from sqlalchemy.engine import Engine
-from sqlalchemy import text, create_engine
+import psycopg2
+from psycopg2.extensions import cursor as Cursor
 
-from hnhm import HnHm, InMemStorage, PostgresSqlalchemySql
+from hnhm.core.state import InMemState
+from hnhm import HnHm, PostgresPsycopgSql
+
+PG_HOST = "localhost"
+PG_USER = os.getenv("PG_USER", "mark")
 
 # Used only to create database with random name for tests
-PG_DB = os.getenv("PG_DB", "hnhm")
-PG_USER = os.getenv("PG_USER", "mark")
+PG_DB = os.getenv("PG_DB", "template1")
 
 
 def generate_random_db_name(size=16, chars=string.ascii_lowercase):
@@ -19,24 +22,41 @@ def generate_random_db_name(size=16, chars=string.ascii_lowercase):
 
 
 @pytest.fixture
-def sqlalchemy_engine() -> Engine:
+def postgres_db() -> str:
     random_db_name = generate_random_db_name()
 
-    engine = create_engine(f"postgresql+psycopg2://{PG_USER}@localhost/{PG_DB}")
-    conn = engine.connect()
-    conn = conn.execution_options(isolation_level="AUTOCOMMIT")
-    conn.execute(text(f"CREATE DATABASE {random_db_name}"))
+    connection = psycopg2.connect(database=PG_DB, user=PG_USER, host=PG_HOST)
+    connection.autocommit = True
 
-    yield create_engine(f"postgresql+psycopg2://{PG_USER}@localhost/{random_db_name}")
+    cursor = connection.cursor()
+    try:
+        cursor.execute(f"CREATE DATABASE {random_db_name}")
+        yield random_db_name
+    finally:
+        cursor.execute(f"DROP DATABASE IF EXISTS {random_db_name}")
 
-    conn.execute(text(f"DROP DATABASE {random_db_name}"))
-    conn.close()
-    engine.dispose()
+        cursor.close()
+        connection.close()
 
 
 @pytest.fixture
-def hnhm(sqlalchemy_engine) -> HnHm:
+def hnhm(postgres_db) -> HnHm:
     yield HnHm(
-        sql=PostgresSqlalchemySql.with_engine(sqlalchemy_engine),
-        storage=InMemStorage(),
+        sql=PostgresPsycopgSql(
+            database=postgres_db,
+            user=PG_USER,
+        ),
+        state=InMemState(),
     )
+
+
+@pytest.fixture
+def cursor(postgres_db) -> Cursor:
+    connection = psycopg2.connect(database=postgres_db, user=PG_USER, host=PG_HOST)
+    connection.autocommit = True
+    cursor = connection.cursor()
+    try:
+        yield cursor
+    finally:
+        cursor.close()
+        connection.close()

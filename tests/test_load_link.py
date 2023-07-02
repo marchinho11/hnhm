@@ -1,95 +1,85 @@
 from datetime import timedelta
 
-import pytest
-
-from tests.dwh import User, Stage, Review
-from hnhm import Flow, Layout, HnhmLink, HnhmLinkElement
-from tests.util import TIME, TIME_INFINITY, md5, get_data, init_dwh
-
-
-class LinkBase(HnhmLink):
-    __layout__ = Layout(name="user_review")
-
-
-class LinkSinglePK(LinkBase):
-    """LinkSinglePK."""
-
-    user = HnhmLinkElement(entity=User(), comment="User")
-    review = HnhmLinkElement(entity=Review(), comment="Review")
-    __keys__ = [user]
+from hnhm import Flow
+from tests.util import TIME, TIME_INFINITY, md5, get_rows, init_dwh, insert_row
+from tests.__hnhm__ import (
+    UserWith1Key,
+    ReviewWith1Key,
+    StageWith5Columns,
+    LinkUserReviewWith2Keys,
+)
 
 
-class LinkCompositePK(LinkBase):
-    """LinkCompositePK."""
-
-    user = HnhmLinkElement(entity=User(), comment="User")
-    review = HnhmLinkElement(entity=Review(), comment="Review")
-    __keys__ = [user, review]
-
-
-@pytest.mark.parametrize("Link", [LinkSinglePK, LinkCompositePK])
-def test_load(hnhm, sqlalchemy_engine, Link):
-    stage_data = {
-        "review_id": ["review-id-0"],
-        "user_id": ["user-id-0"],
-        "time": [TIME],
-    }
-    expected_link_data = {
-        "review_sk": [md5("review-id-0")],
-        "user_sk": [md5("user-id-0")],
-        "valid_from": [TIME],
-        "valid_to": [TIME_INFINITY],
-        "_source": ["stg__stage"],
-    }
+def test_load__multiple_keys(hnhm, cursor):
     init_dwh(
         hnhm=hnhm,
-        engine=sqlalchemy_engine,
-        entities=[Stage(), User(), Review()],
-        links=[Link()],
-        stage_data={"stg__stage": stage_data},
+        entities=[UserWith1Key(), ReviewWith1Key(), StageWith5Columns()],
+        links=[LinkUserReviewWith2Keys()],
+        stage_data={
+            "stg__stage": [
+                {
+                    "review_id": "0",
+                    "user_id": "0",
+                    "time": TIME,
+                }
+            ]
+        },
+        cursor=cursor,
     )
 
     flow = (
-        Flow(source=Stage(), business_time_field=Stage.time)
+        Flow(source=StageWith5Columns(), business_time_field=StageWith5Columns.time)
         .load(
-            User(),
-            mapping={User.user_id: Stage.user_id},
+            UserWith1Key(),
+            mapping={UserWith1Key.user_id: StageWith5Columns.user_id},
         )
         .load(
-            Review(),
-            mapping={Review.review_id: Stage.review_id},
+            ReviewWith1Key(),
+            mapping={ReviewWith1Key.review_id: StageWith5Columns.review_id},
         )
-        .load(Link())
+        .load(LinkUserReviewWith2Keys())
     )
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
 
     assert len(flow.tasks) == 3
-    assert expected_link_data == get_data("link__user_review", sqlalchemy_engine)
+    assert get_rows("link__user_review", cursor) == [
+        {
+            "review_sk": md5("0"),
+            "user_sk": md5("0"),
+            "valid_from": TIME,
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+        }
+    ]
 
     # Add new link ts
-    stage_data = {
-        "review_id": ["review-id-0"],
-        "user_id": ["user-id-0"],
-        "time": [TIME + timedelta(hours=100)],
-    }
-    expected_link_data = {
-        "review_sk": [md5("review-id-0"), md5("review-id-0")],
-        "user_sk": [md5("user-id-0"), md5("user-id-0")],
-        "valid_from": [TIME, TIME + timedelta(hours=100)],
-        "valid_to": [TIME + timedelta(hours=100), TIME_INFINITY],
-        "_source": ["stg__stage", "stg__stage"],
-    }
-    init_dwh(
-        hnhm=hnhm,
-        engine=sqlalchemy_engine,
-        stage_data={"stg__stage": stage_data},
+    insert_row(
+        "stg__stage",
+        {
+            "review_id": "0",
+            "user_id": "0",
+            "time": TIME + timedelta(hours=100),
+        },
+        cursor,
     )
+
     for task in flow.tasks:
         hnhm.sql.execute(hnhm.sql.generate_sql(task))
 
-    assert expected_link_data == get_data(
-        "link__user_review",
-        sqlalchemy_engine,
-        sort_by=["valid_from"],
-    )
+    assert get_rows("link__user_review", cursor, order_by="valid_from") == [
+        {
+            "review_sk": md5("0"),
+            "user_sk": md5("0"),
+            "valid_from": TIME,
+            "valid_to": TIME + timedelta(hours=100),
+            "_source": "stg__stage",
+        },
+        {
+            "review_sk": md5("0"),
+            "user_sk": md5("0"),
+            "valid_from": TIME + timedelta(hours=100),
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+        },
+    ]

@@ -8,6 +8,7 @@ class Type(str, Enum):
 
     STRING = "STRING"
     INTEGER = "INTEGER"
+    FLOAT = "FLOAT"
     TIMESTAMP = "TIMESTAMP"
 
     def __str__(self):

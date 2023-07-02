@@ -1,15 +1,19 @@
-# <img src="assets/logo.png" height="40px">
+# <img src="docs/assets/logo.png" height="40px">
 [![codecov](https://codecov.io/gh/marchinho11/hnhm/branch/main/graph/badge.svg?token=PFB1111T2D)](https://codecov.io/gh/marchinho11/hnhm)
 [![Release](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml/badge.svg?branch=main&event=push)](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Downloads](https://static.pepy.tech/personalized-badge/hnhm?period=week&units=international_system&left_color=black&right_color=brightgreen&left_text=PyPi%20/%20week)](https://pepy.tech/project/hnhm)
+[![Downloads](https://static.pepy.tech/personalized-badge/hnhm?period=total&units=international_system&left_color=black&right_color=brightgreen&left_text=PyPi%20/%20total)](https://pepy.tech/project/hnhm)
+![Visitors](https://api.visitorbadge.io/api/combined?path=marchinho11%2Fhnhm&label=Visitors&labelColor=%23000000&countColor=%2347c21a&style=flat&labelStyle=none)
 
 **hNhM**(highly Normalized hybrid Model) – data modeling methodology based on Anchor modeling and Data Vault. Implementation of this package is based on report **"How we implemented our data storage model — highly Normalized hybrid Model"** by Evgeny Ermakov and Nikolai Grebenshchikov. 
 [1) Yandex Report, habr.com](https://habr.com/ru/company/yandex/blog/557140/). [2) SmartData Conference, youtube.com](https://youtu.be/2fPqDvHsd0w)
-
+* [Documentation](#documentation)
 * [Basic hNhM concepts](#basic-hnhm-concepts)
 * [Quick Start](#quick-start)
-* [DWH example](#dwh-example)
-* [Guide](#guide)
+
+### Documentation
+https://marchinho11.github.io/hnhm
 
 ### Basic hNhM concepts
 **Logical level**
@@ -34,9 +38,10 @@ Install `hnhm` library
 pip install hnhm
 ```
 
-Create a directory with the name `dwh` and put the `__init__.py` file there with the following contents:
+Create a directory with the name `dwh` and put the `__hnhm__.py` file there with the following contents:
+
 ```python
-# dwh/__init__.py
+# dwh/__hnhm__.py
 from hnhm import (
     Layout,
     LayoutType,
@@ -46,8 +51,8 @@ from hnhm import (
     HnHm,
     HnhmEntity,
     HnhmRegistry,
-    FileStorage,
-    PostgresSqlalchemySql
+    FileState,
+    PostgresPsycopgSql
 )
 
 
@@ -63,12 +68,13 @@ class User(HnhmEntity):
 
     __keys__ = [user_id]
 
-    
-__registry__ = HnhmRegistry(
+sql=PostgresPsycopgSql(database="hnhm", user="postgres")
+
+registry = HnhmRegistry(
     entities=[User()],
     hnhm=HnHm(
-        storage=FileStorage("state.json"),
-        sql=PostgresSqlalchemySql(database="hnhm", user="postgres"),
+        state=FileState("state.json"),
+        sql=sql,
     ),
 )
 ```
@@ -79,7 +85,7 @@ $ hnhm apply dwh
 
 Plan:
 
-+ entity 'user'
++ entity 'HNHM.user'
   + view 'user'
   + hub 'user'
   + attribute 'age'
@@ -107,8 +113,3 @@ view: entity__user
  │ + _loaded_at      │
  └───────────────────┘
 ```
-
-## DWH example
-Full DWH example including Entities, Links and Flows can be found in the [`dwh/`](dwh/) directory.
-
-## Guide

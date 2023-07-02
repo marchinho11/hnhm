@@ -1,11 +1,11 @@
 import pytest
 
-from tests.dwh import User
+from tests.__hnhm__ import UserWith1Key
 from hnhm import Layout, String, Integer, HnhmError, ChangeType, HnhmEntity, LayoutType
 
 
 def test_no_doc(hnhm):
-    class UserNoDoc(User):
+    class UserNoDoc(UserWith1Key):
         pass
 
     with hnhm, pytest.raises(
@@ -19,11 +19,11 @@ def test_no_doc(hnhm):
 
 
 def test_no_layout(hnhm):
-    class UserNoLayout(HnhmEntity):
-        """UserNoLayout."""
+    class NoLayout(HnhmEntity):
+        """No layout."""
 
     with pytest.raises(HnhmError, match="Layout not found for entity: "), hnhm:
-        hnhm.plan(entities=[UserNoLayout()])
+        hnhm.plan(entities=[NoLayout()])
 
 
 def test_no_layout_type(hnhm):
@@ -82,12 +82,18 @@ def test_wrong_key_change_type(hnhm):
 
 
 def test_different_group_change_types(hnhm):
-    class UserDifferentGroupChangeTypes(User):
+    class UserDifferentGroupChangeTypes(UserWith1Key):
         """UserDifferentGroupChangeTypes."""
 
-        name = String(comment="User name", change_type=ChangeType.NEW, group="user_data")
+        name = String(
+            comment="User name",
+            change_type=ChangeType.NEW,
+            group="user_data",
+        )
         age = Integer(
-            comment="User age", change_type=ChangeType.IGNORE, group="user_data"
+            comment="User age",
+            change_type=ChangeType.IGNORE,
+            group="user_data",
         )
 
     with pytest.raises(
@@ -101,7 +107,7 @@ def test_different_group_change_types(hnhm):
 
 
 def test_key_only(hnhm):
-    class UserKeyOnly(User):
+    class UserKeyOnly(UserWith1Key):
         """UserKeyOnly."""
 
     with hnhm:
@@ -115,7 +121,7 @@ def test_key_only(hnhm):
 
 
 def test_with_attribute(hnhm):
-    class UserWithAttribute(User):
+    class UserWithAttribute(UserWith1Key):
         """UserWithName."""
 
         name = String(comment="Name.", change_type=ChangeType.IGNORE)
@@ -132,7 +138,7 @@ def test_with_attribute(hnhm):
 
 
 def test_with_group(hnhm):
-    class UserWithGroup(User):
+    class UserWithGroup(UserWith1Key):
         """UserWithGroup."""
 
         name = String(comment="Name.", change_type=ChangeType.IGNORE, group="name")
@@ -149,16 +155,14 @@ def test_with_group(hnhm):
 
 
 def test_update_view(hnhm):
-    class UserWithGroup(User):
+    class UserWithGroup(UserWith1Key):
         """UserWithGroup."""
 
         name = String(comment="Name.", change_type=ChangeType.IGNORE, group="name")
 
-    # Create
     with hnhm:
-        hnhm.apply(hnhm.plan(entities=[User()]))
+        hnhm.apply(hnhm.plan(entities=[UserWith1Key()]))
 
-    # Update
     with hnhm:
         plan = hnhm.plan(entities=[UserWithGroup()])
         migrations = plan.migrations_all
@@ -171,17 +175,15 @@ def test_update_view(hnhm):
 
 
 def test_remove(hnhm):
-    class UserWithEverything(User):
+    class UserWithEverything(UserWith1Key):
         """UserWithEverything."""
 
         age = Integer(comment="Age.", change_type=ChangeType.IGNORE)
         name = String(comment="Name.", change_type=ChangeType.NEW, group="name")
 
-    # Create
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[UserWithEverything()]))
 
-    # Remove
     with hnhm:
         plan = hnhm.plan(entities=[])
         migrations = plan.migrations_all
@@ -192,15 +194,3 @@ def test_remove(hnhm):
         "<RemoveGroup 'name' entity='user'>",
         "<RemoveEntity 'user'>",
     ]
-
-
-def test_stage_at_least_one_attribute(hnhm):
-    class StageNoAttributes(HnhmEntity):
-        """StageNoAttributes."""
-
-        __layout__ = Layout(name="stage", type=LayoutType.STAGE)
-
-    with pytest.raises(
-        HnhmError, match="Entity='STAGE.stage' should have at least 1 attribute."
-    ), hnhm:
-        hnhm.plan(entities=[StageNoAttributes()])

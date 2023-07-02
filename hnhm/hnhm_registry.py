@@ -12,6 +12,9 @@ class HnhmRegistry:
         entities: list[HnhmEntity] | None = None,
         links: list[HnhmLink] | None = None,
     ):
+        entities = entities or []
+        links = links or []
+
         entities_names = set()
         for entity in entities:
             entity_core = entity.to_core()

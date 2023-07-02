@@ -1,9 +1,8 @@
 import abc
 import inspect
 
-from hnhm.core import Group, Entity, Layout, HnhmError, ChangeType, LayoutType
-
 from .hnhm_attribute import HnhmAttribute
+from .core import Group, Entity, Layout, HnhmError, ChangeType, LayoutType
 
 
 class HnhmEntity(abc.ABC):
@@ -27,9 +26,11 @@ class HnhmEntity(abc.ABC):
 
         name = layout.name
 
+        fqn = f"{layout.type}.{name}"
+
         if not inspected.get("__doc__"):
             raise HnhmError(
-                f"Doc not found or empty for entity: '{layout.type}.{name}'."
+                f"Doc not found or empty for entity: '{fqn}'."
                 " Please, write a documentation for your entity."
             )
         doc: str = inspected["__doc__"]
@@ -41,7 +42,7 @@ class HnhmEntity(abc.ABC):
             case LayoutType.HNHM:
                 if not inspected.get("__keys__"):
                     raise HnhmError(
-                        f"At least one Key is required for entity '{layout.type}.{name}'."
+                        f"At least one Key is required for entity '{fqn}'."
                         " Please, specify entity's keys via the '__keys__' attribute."
                     )
 
@@ -50,7 +51,7 @@ class HnhmEntity(abc.ABC):
                     if key.change_type != ChangeType.IGNORE:
                         raise HnhmError(
                             f"Change type='{key.change_type}' is not supported for Key attributes."
-                            f" Use 'ChangeType.IGNORE' for the key attributes in the '{layout.type}.{name}' entity."
+                            f" Use 'ChangeType.IGNORE' for the key attributes in the '{fqn}' entity."
                         )
 
                 keys = [key.to_core(name) for key in keys_hnhm]
@@ -83,7 +84,7 @@ class HnhmEntity(abc.ABC):
 
                 if groups[group_name].change_type != attribute.change_type:
                     raise HnhmError(
-                        f"Found conflicting ChangeType for the entity='{layout.type}.{name}' group='{group_name}'."
+                        f"Found conflicting ChangeType for the entity='{fqn}' group='{group_name}'."
                         " Please, use single ChangeType for all attributes within the same group."
                     )
                 groups[group_name].attributes[attribute_name] = attribute
@@ -92,11 +93,10 @@ class HnhmEntity(abc.ABC):
                 attributes[attribute_name] = attribute
 
         if layout.type == LayoutType.STAGE and len(attributes) < 1:
-            raise HnhmError(
-                f"Entity='{layout.type}.{name}' should have at least 1 attribute."
-            )
+            raise HnhmError(f"Entity='{fqn}' should have at least 1 attribute.")
 
         return Entity(
+            fqn=fqn,
             name=name,
             layout=layout,
             doc=doc,

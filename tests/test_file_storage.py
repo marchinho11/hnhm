@@ -4,26 +4,26 @@ from datetime import datetime
 
 import pytest
 
-from tests.dwh import User
-from hnhm import FileStorage
+from hnhm import FileState
+from tests.__hnhm__ import UserWith1Key1Group
 
 
 @pytest.fixture
-def file_storage_test_file() -> str:
+def file_state_test_file() -> str:
     file_path = "/tmp/" + datetime.now().strftime("%y%m%d_%H%M%S") + ".json"
     yield file_path
     if pathlib.Path(file_path).is_file():
         os.remove(file_path)
 
 
-def test_file_storage(file_storage_test_file):
-    storage = FileStorage(file_storage_test_file)
-    state = storage.load()
-    assert not state.links and not state.entities
+def test_file_state(file_state_test_file):
+    state = FileState(file_state_test_file)
+    data = state.load()
+    assert not data.links and not data.entities
 
-    state.entities["user"] = User().to_core()
-    storage.save(state)
+    data.entities["user"] = UserWith1Key1Group().to_core()
+    state.save(data)
 
-    state = FileStorage(file_storage_test_file).load()
-    assert state.entities
-    assert not state.links
+    data = FileState(file_state_test_file).load()
+    assert data.entities
+    assert not data.links
