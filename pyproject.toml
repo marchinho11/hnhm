@@ -9,6 +9,7 @@ keywords = ["hnhm", "datavault", "anchormodeling", "python"]
 [project.urls]
 homepage = "https://marchinho11.github.io/hnhm"
 repository = "https://github.com/marchinho11/hnhm"
+documentation = "https://marchinho11.github.io/hnhm"
 
 [tool.poetry.dependencies]
 python = "^3.10"
