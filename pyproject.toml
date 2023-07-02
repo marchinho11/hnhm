@@ -24,6 +24,7 @@ pytest = "7.4.0"
 pytest-cov = "4.1.0"
 pygount = "1.6.0"
 pytest-env = "0.8.2"
+mkdocs = "1.4.3"
 
 [tool.poetry.scripts]
 hnhm = "hnhm.cli:cli"
