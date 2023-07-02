@@ -1,3 +1,4 @@
+# Thanks @roman-right for example from the https://github.com/roman-right/beanie repo
 loaders:
   - type: python
 processors:

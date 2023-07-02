@@ -93,17 +93,6 @@ class UserWith1Key1Attribute1Group(UserWith1Key1Attribute, UserWith1Key1Group):
     """User with 1 key, 1 attribute, and 1 group."""
 
 
-#
-#
-# class UserWithGroup(User):
-#     """UserWithGroup"""
-#
-#     name_sep = String(comment="Name without group.", change_type=ChangeType.IGNORE)
-#     age = String(comment="Age.", change_type=ChangeType.IGNORE, group="g")
-#     name = String(comment="Name.", change_type=ChangeType.IGNORE, group="g")
-#
-
-
 class ReviewWith1Key(HnhmEntity):
     """Review with 1 key."""
 
