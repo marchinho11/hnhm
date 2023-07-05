@@ -1,4 +1,4 @@
-# <img src="docs/assets/logo.png" height="40px">
+# <img src="https://raw.githubusercontent.com/marchinho11/hnhm/main/docs/assets/logo.png" height="40px">
 [![codecov](https://codecov.io/gh/marchinho11/hnhm/branch/main/graph/badge.svg?token=PFB1111T2D)](https://codecov.io/gh/marchinho11/hnhm)
 [![Release](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml/badge.svg?branch=main&event=push)](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -107,8 +107,9 @@ view: entity__user
  │ + user_sk (FK)    ├──►│ + user_sk (PK) │◄──┤ + user_sk (FK)  │
  │ + first_name      │   │ + user_id_bk   │   │ + age           │
  │ + last_name       │   │ + valid_from   │   │ + valid_from    │
- │ + valid_from      │   │ + _source      │   │ + _source       │
- │ + valid_to        │   │ + _loaded_at   │   │ + _loaded_at    │
+ │ + valid_from      │   │ + _hash        │   │ + _hash         │
+ │ + valid_to        │   │ + _source      │   │ + _source       │
+ │ + _hash           │   │ + _loaded_at   │   │ + _loaded_at    │
  │ + _source         │   └────────────────┘   └─────────────────┘
  │ + _loaded_at      │
  └───────────────────┘

@@ -17,8 +17,7 @@ def test_single_pk(hnhm, cursor):
         UserWith1Key1Attribute(),
         mapping={UserWith1Key1Attribute.user_id: StageWith5Columns.user_id},
     )
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    flow.execute(hnhm.sql)
 
     assert len(flow.tasks) == 1
     assert get_rows("hub__user", cursor) == [
@@ -48,8 +47,7 @@ def test_composite_pk(hnhm, cursor):
             UserWith2Keys.name: StageWith5Columns.name,
         },
     )
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    flow.execute(hnhm.sql)
 
     assert len(flow.tasks) == 1
     assert get_rows("hub__user", cursor) == [

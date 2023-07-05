@@ -1,7 +1,7 @@
 from .hnhm_link import HnhmLink
 from .hnhm_attribute import HnhmAttribute
 from .hnhm_entity import HnhmEntity, LayoutType
-from .core import Entity, Attribute, HnhmError, task
+from .core import Sql, Link, Entity, Attribute, HnhmError, task
 
 
 class Flow:
@@ -29,7 +29,7 @@ class Flow:
         self._groups: dict[str, dict[str, dict[Attribute, Attribute]]] = {}
 
         # {link_name -> {entity_name -> {attribute_target -> attribute_source}}}
-        self._links = {}
+        self._links: dict[str, Link] = {}
 
     @property
     def tasks(self) -> list[task.Task]:
@@ -83,19 +83,26 @@ class Flow:
         for link_name, link in self._links.items():
             keys_mapping = {}
             depends_on = []
+            key_entities_names = []
             for link_element in link.elements:
                 entity_name = link_element.entity.name
                 depends_on.append(hub_tasks[entity_name].id)
                 keys_mapping[entity_name] = self._entities_keys_mappings[entity_name]
+
+                if link_element in link.keys:
+                    key_entities_names.append(link_element.entity.name)
+
             tasks.append(
                 task.LoadLink(
                     source=self.source,
                     link=link,
                     keys_mapping=keys_mapping,
+                    key_entities_names=key_entities_names,
                     business_time_field=self.business_time_field,
                     depends_on=depends_on,
                 )
             )
+
         tasks.extend(hub_tasks.values())
         tasks = sorted(tasks, key=lambda t: t.priority)
         return tasks
@@ -195,3 +202,7 @@ class Flow:
                 raise HnhmError(f"Unknown target type '{target_type}'.")
 
         return self
+
+    def execute(self, sql: Sql):
+        for _task in self.tasks:
+            sql.execute(sql.generate_sql(_task))
