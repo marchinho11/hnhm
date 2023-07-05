@@ -19,30 +19,27 @@ def generate_sql(
 
     match migration_or_task:
         case migration.CreateEntity(entity=entity):
+            columns_with_types = []
             if entity.layout.type == LayoutType.HNHM:
                 template = jinja.get_template("create_hub.sql")
-                columns = []
-                columns_types = []
                 for key in entity.keys:
-                    columns.append(key.name)
+                    column_name = key.name
                     column_type = PG_TYPES[key.type]
-                    columns_types.append(f"{column_type} NOT NULL")
+                    column_type = f"{column_type} NOT NULL"
+                    columns_with_types.append((column_name, column_type))
 
             elif entity.layout.type == LayoutType.STAGE:
                 template = jinja.get_template("create_stage.sql")
-                columns = []
-                columns_types = []
                 for attribute in entity.attributes.values():
-                    columns.append(attribute.name)
-                    columns_types.append(PG_TYPES[attribute.type])
+                    column_name = attribute.name
+                    column_type = PG_TYPES[attribute.type]
+                    columns_with_types.append((column_name, column_type))
 
             else:
                 raise HnhmError(f"Unknown LayoutType='{entity.layout.type}'")
 
             return template.render(
-                name=entity.name,
-                columns=columns,
-                columns_types=columns_types,
+                name=entity.name, columns_with_types=columns_with_types
             )
 
         case migration.RecreateEntityView(entity=entity):
@@ -77,16 +74,14 @@ def generate_sql(
             if entity.layout.type == LayoutType.STAGE:
                 return f"ALTER TABLE stg__{entity.name} ADD COLUMN {attribute.name} {attribute_type}"
 
-            time_columns = ["valid_from TIMESTAMPTZ NOT NULL"]
-            if attribute.change_type == ChangeType.NEW:
-                time_columns.append("valid_to TIMESTAMPTZ")
+            is_scd2 = attribute.change_type == ChangeType.NEW
 
             template = jinja.get_template("create_attribute.sql")
             return template.render(
                 entity_name=entity.name,
                 attribute_name=attribute.name,
                 attribute_type=attribute_type,
-                time_columns=time_columns,
+                is_scd2=is_scd2,
             )
 
         case migration.CreateGroup(entity=entity, group=group):
@@ -95,16 +90,14 @@ def generate_sql(
                 column_type = PG_TYPES[attribute.type]
                 columns.append(f"{attribute.name} {column_type}")
 
-            time_columns = ["valid_from TIMESTAMPTZ NOT NULL"]
-            if group.change_type == ChangeType.NEW:
-                time_columns.append("valid_to TIMESTAMPTZ")
+            is_scd2 = group.change_type == ChangeType.NEW
 
             template = jinja.get_template("create_group.sql")
             return template.render(
                 entity_name=entity.name,
                 group_name=group.name,
                 columns=columns,
-                time_columns=time_columns,
+                is_scd2=is_scd2,
             )
 
         case migration.AddGroupAttribute(entity=entity, group=group, attribute=attribute):
@@ -220,7 +213,6 @@ def generate_sql(
                 target_sks=target_sks,
                 target_attributes=target_attributes,
                 business_time_field=business_time_field.name,
-                extra_sks=[],
             )
 
         case task.LoadGroup(
@@ -269,7 +261,6 @@ def generate_sql(
                 target_sks=target_sks,
                 target_attributes=target_attributes,
                 business_time_field=business_time_field.name,
-                extra_sks=[],
             )
 
         case task.LoadLink(
@@ -277,11 +268,13 @@ def generate_sql(
             link=link,
             business_time_field=business_time_field,
             keys_mapping=keys_mapping,
+            key_entities_names=key_entities_names,
         ):
             source_table = f"stg__{source.name}"
 
             target_sks = []
             source_sks = []
+            key_sks = []
             for entity_name, entity_keys_mapping in keys_mapping.items():
                 source_keys = [
                     key_source.name for key_source in entity_keys_mapping.values()
@@ -289,22 +282,24 @@ def generate_sql(
                 source_sk_components = (f"{key}::TEXT" for key in source_keys)
                 source_sk_components = "|| '-' ||".join(source_sk_components)
                 source_sk = f"MD5({source_sk_components})"
-
-                target_sks.append(f"{entity_name}_sk")
                 source_sks.append(source_sk)
+
+                target_sk = f"{entity_name}_sk"
+                target_sks.append(target_sk)
+
+                if entity_name in key_entities_names:
+                    key_sks.append(target_sk)
 
             target_table = f"link__{link.name}"
 
-            template = jinja.get_template("load_new.sql")
+            template = jinja.get_template("load_link.sql")
             return template.render(
                 source_table=source_table,
-                source_sks=source_sks,
-                source_attributes=[],
                 target_table=target_table,
+                source_sks=source_sks,
                 target_sks=target_sks,
-                target_attributes=[],
+                key_sks=key_sks,
                 business_time_field=business_time_field.name,
-                extra_sks=["valid_from"],
             )
 
         case _:

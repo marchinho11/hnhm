@@ -43,6 +43,7 @@ def test_ignore(hnhm, cursor):
             "age": 100,
             "valid_from": TIME,
             "_source": "stg__stage",
+            "_hash": md5("Mark-100"),
         }
     ]
 
@@ -56,8 +57,7 @@ def test_ignore(hnhm, cursor):
             GroupIgnore.age: StageWith5Columns.age,
         },
     )
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    flow.execute(hnhm.sql)
 
     assert len(flow.tasks) == 2
     assert get_rows("group__user__user_data", cursor) == expected
@@ -74,8 +74,7 @@ def test_ignore(hnhm, cursor):
         cursor,
     )
 
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    flow.execute(hnhm.sql)
 
     assert len(flow.tasks) == 2
     assert get_rows("group__user__user_data", cursor) == expected
@@ -123,8 +122,7 @@ def test_update(hnhm, cursor):
             GroupUpdate.age: StageWith5Columns.age,
         },
     )
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    flow.execute(hnhm.sql)
 
     assert len(flow.tasks) == 2
     assert get_rows("group__user__user_data", cursor) == [
@@ -134,6 +132,7 @@ def test_update(hnhm, cursor):
             "age": 100,
             "valid_from": TIME,
             "_source": "stg__stage",
+            "_hash": md5("Mark-100"),
         }
     ]
 
@@ -149,8 +148,7 @@ def test_update(hnhm, cursor):
         cursor,
     )
 
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    flow.execute(hnhm.sql)
 
     assert len(flow.tasks) == 2
     assert get_rows("group__user__user_data", cursor) == [
@@ -160,6 +158,7 @@ def test_update(hnhm, cursor):
             "age": 23,
             "valid_from": TIME + timedelta(hours=1),
             "_source": "stg__stage",
+            "_hash": md5("John-23"),
         }
     ]
 
@@ -206,8 +205,7 @@ def test_new(hnhm, cursor):
             GroupNew.age: StageWith5Columns.age,
         },
     )
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
+    flow.execute(hnhm.sql)
 
     assert len(flow.tasks) == 2
     assert get_rows("group__user__user_data", cursor) == [
@@ -218,6 +216,7 @@ def test_new(hnhm, cursor):
             "valid_from": TIME,
             "valid_to": TIME_INFINITY,
             "_source": "stg__stage",
+            "_hash": md5("Mark-100"),
         }
     ]
 
@@ -232,11 +231,7 @@ def test_new(hnhm, cursor):
         },
         cursor,
     )
-
-    for task in flow.tasks:
-        hnhm.sql.execute(hnhm.sql.generate_sql(task))
-
-    assert len(flow.tasks) == 2
+    flow.execute(hnhm.sql)
     assert get_rows("group__user__user_data", cursor, order_by="valid_from") == [
         {
             "user_sk": md5("0"),
@@ -245,6 +240,7 @@ def test_new(hnhm, cursor):
             "valid_from": TIME,
             "valid_to": TIME + timedelta(hours=1),
             "_source": "stg__stage",
+            "_hash": md5("Mark-100"),
         },
         {
             "user_sk": md5("0"),
@@ -253,5 +249,60 @@ def test_new(hnhm, cursor):
             "valid_from": TIME + timedelta(hours=1),
             "valid_to": TIME_INFINITY,
             "_source": "stg__stage",
+            "_hash": md5("John-23"),
+        },
+    ]
+
+    # Insert in the middle
+    insert_row(
+        "stg__stage",
+        {
+            "user_id": "0",
+            "name": "Jack",
+            "age": None,
+            "time": TIME + timedelta(minutes=30),
+        },
+        cursor,
+    )
+    # Duplicate
+    insert_row(
+        "stg__stage",
+        {
+            "user_id": "0",
+            "name": "Jack",
+            "age": None,
+            "time": TIME + timedelta(minutes=30),
+        },
+        cursor,
+    )
+    flow.execute(hnhm.sql)
+
+    assert get_rows("group__user__user_data", cursor, order_by="valid_from") == [
+        {
+            "user_sk": md5("0"),
+            "name": "Mark",
+            "age": 100,
+            "valid_from": TIME,
+            "valid_to": TIME + timedelta(minutes=30),
+            "_source": "stg__stage",
+            "_hash": md5("Mark-100"),
+        },
+        {
+            "user_sk": md5("0"),
+            "name": "Jack",
+            "age": None,
+            "valid_from": TIME + timedelta(minutes=30),
+            "valid_to": TIME + timedelta(hours=1),
+            "_source": "stg__stage",
+            "_hash": md5("Jack-null"),
+        },
+        {
+            "user_sk": md5("0"),
+            "name": "John",
+            "age": 23,
+            "valid_from": TIME + timedelta(hours=1),
+            "valid_to": TIME_INFINITY,
+            "_source": "stg__stage",
+            "_hash": md5("John-23"),
         },
     ]

@@ -1,11 +1,16 @@
-WITH data AS (
+WITH source_data AS (
     SELECT
         {{ source_sk }} AS sk,
         {{ business_time_field }} AS valid_from,
+        '{{ source_table }}' AS _source,
+        CURRENT_TIMESTAMP AS _loaded_at,
+        {{ source_attributes | join(",") }},
 
-        {% for source_attribute in source_attributes -%}
-            {{ source_attribute }},
-        {% endfor -%}
+        MD5(CONCAT_WS('-',
+            {% for source_attribute in source_attributes -%}
+                COALESCE({{ source_attribute }}::TEXT, 'null') {% if not loop.last %}, {% endif %}
+            {% endfor -%}
+        )) AS _hash,
 
         ROW_NUMBER() OVER (
             PARTITION BY {{ source_sk }}
@@ -16,26 +21,26 @@ WITH data AS (
 )
 INSERT INTO {{ target_table }}(
     {{ target_sk }},
-    {% for target_attribute in target_attributes -%}
-    {{ target_attribute }},
-    {% endfor -%}
+    {{ target_attributes | join(",") }},
     valid_from,
+    _hash,
     _source,
     _loaded_at
 )
 SELECT
-    d.sk,
+    source_data.sk,
     {% for source_attribute in source_attributes -%}
-        d.{{ source_attribute }},
+        source_data.{{ source_attribute }},
     {% endfor -%}
-    d.valid_from,
-    '{{ source_table }}',
-    CURRENT_TIMESTAMP
+    source_data.valid_from,
+    source_data._hash,
+    source_data._source,
+    source_data._loaded_at
 FROM
-    data d
+    source_data
 LEFT OUTER JOIN
-    {{ target_table }} t
-    ON d.sk = t.{{ target_sk }}
+    {{ target_table }} target_data
+    ON source_data.sk = target_data.{{ target_sk }}
 WHERE
-    t.{{ target_sk }} IS NULL
-    AND d.row_number = 1
+    target_data.{{ target_sk }} IS NULL
+    AND source_data.row_number = 1

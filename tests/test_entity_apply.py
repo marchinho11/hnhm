@@ -38,6 +38,7 @@ def test_with_attribute(hnhm, cursor):
         "user_sk",
         "age",
         "valid_from",
+        "_hash",
         "_source",
         "_loaded_at",
     }
@@ -73,6 +74,7 @@ def test_with_group(hnhm, cursor):
         "first_name",
         "last_name",
         "valid_from",
+        "_hash",
         "_source",
         "_loaded_at",
     }
@@ -120,6 +122,7 @@ def test_group__add_remove_attribute(hnhm, cursor):
         "first_name",
         "last_name",
         "valid_from",
+        "_hash",
         "_source",
         "_loaded_at",
     }
@@ -133,6 +136,7 @@ def test_group__add_remove_attribute(hnhm, cursor):
         "last_name",
         "third_name",
         "valid_from",
+        "_hash",
         "_source",
         "_loaded_at",
     }
@@ -145,6 +149,7 @@ def test_group__add_remove_attribute(hnhm, cursor):
         "first_name",
         "last_name",
         "valid_from",
+        "_hash",
         "_source",
         "_loaded_at",
     }

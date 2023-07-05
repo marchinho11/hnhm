@@ -85,6 +85,7 @@ class LoadGroup(Task):
 class LoadLink(Task):
     priority = Priority.SECOND
     link: Link
+    key_entities_names: list[str]
     keys_mapping: dict[str, dict[Attribute, Attribute]]
 
     @property
