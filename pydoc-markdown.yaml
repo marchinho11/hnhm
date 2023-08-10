@@ -57,13 +57,3 @@ renderer:
     - title: Overview
       name: index
       source: docs/index.md
-    - title: Tutorial
-      children:
-        - title: Intro
-          source: docs/tutorial/intro.md
-        - title: Setup
-          source: docs/tutorial/setup.md
-        - title: Init HnHm
-          source: docs/tutorial/init-hnhm.md
-        - title: Raw Data
-          source: docs/tutorial/raw-data.md

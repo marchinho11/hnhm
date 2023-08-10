@@ -29,7 +29,7 @@ class Migration(pydantic.BaseModel):
 
 
 class CreateEntity(Migration):
-    priority = Priority.FIRST
+    priority: Priority = Priority.FIRST
     entity: Entity
 
     def __str__(self):
@@ -37,7 +37,7 @@ class CreateEntity(Migration):
 
 
 class RemoveEntity(Migration):
-    priority = Priority.THIRD
+    priority: Priority = Priority.THIRD
     entity: Entity
 
     def __str__(self):
@@ -45,7 +45,7 @@ class RemoveEntity(Migration):
 
 
 class RecreateEntityView(Migration):
-    priority = Priority.THIRD
+    priority: Priority = Priority.THIRD
     entity: Entity
 
     def __str__(self):
@@ -53,7 +53,7 @@ class RecreateEntityView(Migration):
 
 
 class RemoveEntityView(Migration):
-    priority = Priority.FIRST
+    priority: Priority = Priority.FIRST
     entity: Entity
 
     def __str__(self):
@@ -61,7 +61,7 @@ class RemoveEntityView(Migration):
 
 
 class CreateAttribute(Migration):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     entity: Entity
     attribute: Attribute
 
@@ -70,7 +70,7 @@ class CreateAttribute(Migration):
 
 
 class RemoveAttribute(Migration):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     entity: Entity
     attribute: Attribute
 
@@ -79,7 +79,7 @@ class RemoveAttribute(Migration):
 
 
 class CreateGroup(Migration):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     entity: Entity
     group: Group
 
@@ -88,7 +88,7 @@ class CreateGroup(Migration):
 
 
 class RemoveGroup(Migration):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     entity: Entity
     group: Group
 
@@ -99,7 +99,7 @@ class RemoveGroup(Migration):
 class AddGroupAttribute(Migration):
     """Add an Attribute to an existing Group."""
 
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     entity: Entity
     group: Group
     attribute: Attribute
@@ -115,7 +115,7 @@ class AddGroupAttribute(Migration):
 class RemoveGroupAttribute(Migration):
     """Remove an Attribute from an existing Group."""
 
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     entity: Entity
     group: Group
     attribute: Attribute
@@ -129,7 +129,7 @@ class RemoveGroupAttribute(Migration):
 
 
 class CreateLink(Migration):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     link: Link
 
     def __str__(self):
@@ -137,7 +137,7 @@ class CreateLink(Migration):
 
 
 class RemoveLink(Migration):
-    priority = Priority.FIRST
+    priority: Priority = Priority.FIRST
     link: Link
 
     def __str__(self):
