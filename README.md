@@ -1,13 +1,12 @@
 # <img src="https://raw.githubusercontent.com/marchinho11/hnhm/main/docs/assets/logo.png" height="40px">
 [![codecov](https://codecov.io/gh/marchinho11/hnhm/branch/main/graph/badge.svg?token=PFB1111T2D)](https://codecov.io/gh/marchinho11/hnhm)
-[![Release](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml/badge.svg?branch=main&event=push)](https://github.com/marchinho11/hnhm/actions/workflows/release.yaml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Downloads](https://static.pepy.tech/personalized-badge/hnhm?period=week&units=international_system&left_color=black&right_color=brightgreen&left_text=PyPi%20/%20week)](https://pepy.tech/project/hnhm)
 [![Downloads](https://static.pepy.tech/personalized-badge/hnhm?period=total&units=international_system&left_color=black&right_color=brightgreen&left_text=PyPi%20/%20total)](https://pepy.tech/project/hnhm)
 ![Visitors](https://api.visitorbadge.io/api/combined?path=marchinho11%2Fhnhm&label=Visitors&labelColor=%23000000&countColor=%2347c21a&style=flat&labelStyle=none)
 
 **hNhM**(highly Normalized hybrid Model) – data modeling methodology that enables iterative and Agile-driven
- modifications to your Data Warehouse (DWH).
+ modifications to your Data Warehouse (DWH). The methodology is based on Anchor Modeling and Data Vault.
 
 
 The idea is to represent each Entity using 3 types of tables:
@@ -21,14 +20,14 @@ So, the purpose of `hnhm` is to:
 * **Define** Entities, Links and Flows *declaratively* using Python
   * Describe them "logically"
   * The "physical" layer is managed by `hnhm`
-* *Apply** the changes to a DWH iteratively
+* **Apply** the changes to a DWH iteratively
   * `hnhm` detects changes in the entities and creates new Attributes, Groups, or Links
 * **Load** data from the Staging layer using Flows in the correct order
   * Ignore, Update, or keep the history using `SCD2`
 
 
-The methodology is based on Anchor Modeling and Data Vault. Implementation of this package is based on
- the **"How we implemented our data storage model — highly Normalized hybrid Model"** report
+Implementation of this package is based on report
+ **"How we implemented our data storage model — highly Normalized hybrid Model"**
  by Evgeny Ermakov and Nikolai Grebenshchikov. [1) Yandex Report, habr.com](https://habr.com/ru/company/yandex/blog/557140/).
  [2) SmartData Conference, youtube.com](https://youtu.be/2fPqDvHsd0w)
 
