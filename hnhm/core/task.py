@@ -25,7 +25,7 @@ class Task(pydantic.BaseModel):
 
 
 class LoadHub(Task):
-    priority = Priority.FIRST
+    priority: Priority = Priority.FIRST
     target: Entity
 
     @property
@@ -37,7 +37,7 @@ class LoadHub(Task):
 
 
 class LoadAttribute(Task):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     target: Entity
     source_attribute: Attribute
     target_attribute: Attribute
@@ -61,7 +61,7 @@ class LoadAttribute(Task):
 
 
 class LoadGroup(Task):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     target: Entity
     group: Group
     attributes_mapping: dict[Attribute, Attribute]
@@ -83,7 +83,7 @@ class LoadGroup(Task):
 
 
 class LoadLink(Task):
-    priority = Priority.SECOND
+    priority: Priority = Priority.SECOND
     link: Link
     key_entities_names: list[str]
     keys_mapping: dict[str, dict[Attribute, Attribute]]

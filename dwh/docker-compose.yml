@@ -11,6 +11,7 @@ services:
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_DB: coinmarket
+      POSTGRES_DB: hnhm
       POSTGRES_USER: hnhm
       POSTGRES_PASSWORD: 123
+

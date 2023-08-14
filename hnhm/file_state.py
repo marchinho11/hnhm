@@ -9,10 +9,11 @@ class FileState(State):
 
     def load(self) -> HnhmStateData:
         if Path(self.file_name).is_file():
-            return HnhmStateData.parse_file(self.file_name)
+            with open(self.file_name) as file_state:
+                return HnhmStateData.model_validate_json(file_state.read())
         else:
             return HnhmStateData(entities={}, entities_views=set(), links={})
 
     def save(self, data: HnhmStateData):
         with open(self.file_name, "w") as f:
-            f.write(data.json(ensure_ascii=False, indent=2))
+            f.write(data.model_dump_json(indent=2))
