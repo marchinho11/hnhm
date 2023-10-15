@@ -1,7 +1,12 @@
 CREATE OR REPLACE VIEW {{ view_name }}
 AS
 SELECT
-    {{ hub }}.{{ sk }} {%- if selects %}, {%- endif %}
+    {{ hub }}.{{ sk }},
+    {% for key in keys %}
+        {{ hub }}.{{ key }}_bk,
+    {%- endfor %}
+    {{ hub }}.valid_from,
+    {{ hub }}._loaded_at {%- if selects %}, {%- endif %}
     {% for table, column, alias in selects %}
         {{ table }}.{{ column }} AS {{ alias }}
         {%- if not loop.last %}, {%- endif %}

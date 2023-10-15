@@ -63,6 +63,7 @@ def generate_sql(
             return template.render(
                 view_name=view_name,
                 sk=sk,
+                keys=[k.name for k in entity.keys],
                 hub=hub,
                 selects=selects,
                 attributes=entity.attributes.values(),
