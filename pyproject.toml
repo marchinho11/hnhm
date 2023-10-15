@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hnhm"
-version = "0.0.9"
+version = "0.0.10"
 readme = "README.md"
 description = "hNhM – highly Normalized hybrid Model."
 keywords = ["hnhm", "datavault", "anchormodeling", "python"]
@@ -54,7 +54,7 @@ exclude_lines = [
 [tool.bumpversion]
 commit = false
 tag = false
-current_version = "0.0.9"
+current_version = "0.0.10"
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
