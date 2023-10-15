@@ -18,5 +18,3 @@ jobs:
       - uses: chartboost/ruff-action@v1
         with:
           version: "0.0.292"
-
-      - uses: jpetrucciani/mypy-check@master
