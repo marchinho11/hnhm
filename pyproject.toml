@@ -22,8 +22,6 @@ pre-commit = "3.3.3"
 pytest = "7.4.0"
 pytest-cov = "4.1.0"
 pygount = "1.6.0"
-ruff = "0.0.292"
-mypy = "1.6.0"
 
 [tool.poetry.scripts]
 hnhm = "hnhm.cli:cli"
