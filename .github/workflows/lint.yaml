@@ -2,18 +2,19 @@ on:
   workflow_call:
 
 jobs:
-  black:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: psf/black@stable
         with:
           version: "23.9.1"
 
-  isort:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
       - uses: isort/isort-action@v1
         with:
           isort-version: "5.12.0"
+
+      - uses: chartboost/ruff-action@v1
+        with:
+          version: "0.0.292"

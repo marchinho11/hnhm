@@ -320,8 +320,6 @@ view: entity__user
   * Guides, best practices, and recipes
 * Code Style & CI
   * Testing matrix
-  * Adopt [`Ruff`](https://github.com/roman-right/beanie/blob/main/.pre-commit-config.yaml) or [`wemake-python-styleguide`](https://github.com/wemake-services/wemake-python-styleguide)
-
 
 ## Contribute!
 What contributions are welcome? (**spoiler: any!**)
