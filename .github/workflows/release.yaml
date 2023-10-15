@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ tests ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
@@ -36,7 +36,3 @@ jobs:
       - run: poetry build
       - run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
       - run: poetry publish
-
-  docs:
-    needs: [ pypi ]
-    uses: ./.github/workflows/docs.yaml

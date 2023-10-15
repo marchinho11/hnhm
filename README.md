@@ -44,7 +44,6 @@ Implementation of this package is based on report
 * [Supported Databases](#supported-databases)
 * [Future plans](#future-plans)
 * [Contribute!](#contribute)
-* [Documentation](#documentation)
 * [Created with](#created-with)
 
 
@@ -333,10 +332,6 @@ What contributions are welcome? (**spoiler: any!**)
 - Documentation improvement
 - Code refinement
 - Bug fixes
-
-
-## Documentation
-https://marchinho11.github.io/hnhm
 
 ## Created with
 | <img height="20" src="https://upload.wikimedia.org/wikipedia/commons/1/1d/PyCharm_Icon.svg"> PyCharm Professional |

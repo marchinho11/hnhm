@@ -5,15 +5,15 @@ jobs:
   black:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: psf/black@stable
         with:
-          version: "23.3.0"
+          version: "23.9.1"
 
   isort:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: isort/isort-action@v1
         with:
           isort-version: "5.12.0"
