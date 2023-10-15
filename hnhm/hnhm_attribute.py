@@ -8,7 +8,11 @@ class HnhmAttribute(abc.ABC):
     type: Type
 
     def __init__(
-        self, comment: str, *, change_type: ChangeType, group: str | None = None
+        self,
+        comment: str,
+        *,
+        change_type: ChangeType = ChangeType.IGNORE,
+        group: str | None = None,
     ):
         self.comment = comment
         self.change_type = change_type

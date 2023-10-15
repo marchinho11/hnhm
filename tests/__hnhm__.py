@@ -24,22 +24,22 @@ class StageNoColumns(HnhmEntity):
 class StageWith1Column(StageNoColumns):
     """Stage with 1 column."""
 
-    user_id = String("User ID", change_type=ChangeType.IGNORE)
+    user_id = String("User ID")
 
 
 class StageWith5Columns(StageWith1Column):
     """Stage with 5 columns."""
 
-    review_id = String("Review ID", change_type=ChangeType.IGNORE)
-    name = String("User name", change_type=ChangeType.IGNORE)
-    age = Integer("User age", change_type=ChangeType.IGNORE)
-    time = Timestamp("Time", change_type=ChangeType.IGNORE)
+    review_id = String("Review ID")
+    name = String("User name")
+    age = Integer("User age")
+    time = Timestamp("Time")
 
 
 class StageWith6Columns(StageWith5Columns):
     """Stage with 6 columns."""
 
-    new_id = String("New ID", change_type=ChangeType.IGNORE)
+    new_id = String("New ID")
 
 
 class UserWith1Key(HnhmEntity):
