@@ -9,6 +9,7 @@ PG_TYPES = {
     Type.INTEGER: "INTEGER",
     Type.FLOAT: "DOUBLE PRECISION",
     Type.TIMESTAMP: "TIMESTAMPTZ",
+    Type.BOOLEAN: "BOOLEAN",
 }
 
 
@@ -25,7 +26,6 @@ def generate_sql(
                 for key in entity.keys:
                     column_name = key.name
                     column_type = PG_TYPES[key.type]
-                    column_type = f"{column_type} NOT NULL"
                     columns_with_types.append((column_name, column_type))
 
             elif entity.layout.type == LayoutType.STAGE:
@@ -62,6 +62,7 @@ def generate_sql(
             return template.render(
                 view_name=view_name,
                 sk=sk,
+                keys=[k.name for k in entity.keys],
                 hub=hub,
                 selects=selects,
                 attributes=entity.attributes.values(),
@@ -155,8 +156,9 @@ def generate_sql(
             keys_mapping=keys_mapping,
         ):
             source_keys = [key_source.name for key_source in keys_mapping.values()]
-            source_sk_components = (f"{key}::TEXT" for key in source_keys)
-            source_sk_components = "|| '-' ||".join(source_sk_components)
+            source_sk_components = "|| '-' ||".join(
+                f"COALESCE({key}::TEXT, 'NULL')" for key in source_keys
+            )
             source_sk = f"MD5({source_sk_components})"
 
             target_keys = [key.name for key in target.keys]
@@ -182,8 +184,9 @@ def generate_sql(
             source_table = f"stg__{source.name}"
 
             source_keys = [key_source.name for key_source in keys_mapping.values()]
-            source_sk_components = (f"{key}::TEXT" for key in source_keys)
-            source_sk_components = "|| '-' ||".join(source_sk_components)
+            source_sk_components = "|| '-' ||".join(
+                f"COALESCE({key}::TEXT, 'NULL')" for key in source_keys
+            )
             source_sk = f"MD5({source_sk_components})"
 
             source_attributes = [source_attribute.name]
@@ -226,8 +229,9 @@ def generate_sql(
             source_table = f"stg__{source.name}"
 
             source_keys = [key_source.name for key_source in keys_mapping.values()]
-            source_sk_components = (f"{key}::TEXT" for key in source_keys)
-            source_sk_components = "|| '-' ||".join(source_sk_components)
+            source_sk_components = "|| '-' ||".join(
+                f"COALESCE({key}::TEXT, 'NULL')" for key in source_keys
+            )
             source_sk = f"MD5({source_sk_components})"
 
             source_attributes = [
@@ -279,8 +283,9 @@ def generate_sql(
                 source_keys = [
                     key_source.name for key_source in entity_keys_mapping.values()
                 ]
-                source_sk_components = (f"{key}::TEXT" for key in source_keys)
-                source_sk_components = "|| '-' ||".join(source_sk_components)
+                source_sk_components = "|| '-' ||".join(
+                    f"COALESCE({key}::TEXT, 'NULL')" for key in source_keys
+                )
                 source_sk = f"MD5({source_sk_components})"
                 source_sks.append(source_sk)
 

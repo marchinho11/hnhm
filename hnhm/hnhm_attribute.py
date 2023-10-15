@@ -9,9 +9,9 @@ class HnhmAttribute(abc.ABC):
 
     def __init__(
         self,
-        *,
         comment: str,
-        change_type: ChangeType,
+        *,
+        change_type: ChangeType = ChangeType.IGNORE,
         group: str | None = None,
     ):
         self.comment = comment
@@ -47,3 +47,7 @@ class Float(HnhmAttribute):
 
 class Timestamp(HnhmAttribute):
     type = Type.TIMESTAMP
+
+
+class Boolean(HnhmAttribute):
+    type = Type.BOOLEAN

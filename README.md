@@ -44,7 +44,7 @@ Implementation of this package is based on report
 * [Supported Databases](#supported-databases)
 * [Future plans](#future-plans)
 * [Contribute!](#contribute)
-* [Documentation](#documentation)
+* [Created with](#created-with)
 
 
 ## Tutorial
@@ -140,7 +140,7 @@ class User(HnhmEntity):
 
     __layout__ = Layout(name="user", type=LayoutType.HNHM)
 
-    user_id = String(comment="User ID.", change_type=ChangeType.IGNORE)
+    user_id = String("User ID.", change_type=ChangeType.IGNORE)
 
     __keys__ = [user_id]
 
@@ -212,10 +212,10 @@ class User(HnhmEntity):
 
     __layout__ = Layout(name="user", type=LayoutType.HNHM)
 
-    user_id = String(comment="User ID.", change_type=ChangeType.IGNORE)
-+   age = Integer(comment="Age.", change_type=ChangeType.UPDATE)
-+   first_name = String(comment="First name.", change_type=ChangeType.NEW, group="name")
-+   last_name = String(comment="Last name.", change_type=ChangeType.NEW, group="name")
+    user_id = String("User ID.", change_type=ChangeType.IGNORE)
++   age = Integer("Age.", change_type=ChangeType.UPDATE)
++   first_name = String("First name.", change_type=ChangeType.NEW, group="name")
++   last_name = String("Last name.", change_type=ChangeType.NEW, group="name")
 
     __keys__ = [user_id]
 
@@ -320,8 +320,6 @@ view: entity__user
   * Guides, best practices, and recipes
 * Code Style & CI
   * Testing matrix
-  * Adopt [`Ruff`](https://github.com/roman-right/beanie/blob/main/.pre-commit-config.yaml) or [`wemake-python-styleguide`](https://github.com/wemake-services/wemake-python-styleguide)
-
 
 ## Contribute!
 What contributions are welcome? (**spoiler: any!**)
@@ -333,6 +331,7 @@ What contributions are welcome? (**spoiler: any!**)
 - Code refinement
 - Bug fixes
 
-
-## Documentation
-https://marchinho11.github.io/hnhm
+## Created with
+| <img height="20" src="https://upload.wikimedia.org/wikipedia/commons/1/1d/PyCharm_Icon.svg"> PyCharm Professional |
+|-------------------------------------------------------------------------------------------------------------------|
+| <img height="20" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Neovim-mark.svg"> Neovim                |

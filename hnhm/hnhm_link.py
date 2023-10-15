@@ -6,9 +6,9 @@ from .core import Link, Layout, HnhmError, LayoutType, LinkElement
 
 
 class HnhmLinkElement:
-    def __init__(self, *, entity: HnhmEntity, comment: str):
-        self.entity = entity
+    def __init__(self, comment: str, *, entity: HnhmEntity):
         self.comment = comment
+        self.entity = entity
 
     def to_core(self) -> LinkElement:
         entity = self.entity.to_core()

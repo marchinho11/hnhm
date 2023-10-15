@@ -104,3 +104,11 @@ def get_columns(table: str, cursor: Cursor) -> set[str]:
     columns = cursor.fetchall()
     columns = set(c[0] for c in columns)
     return columns
+
+
+def get_columns_with_types(table: str, cursor: Cursor) -> dict[str, str]:
+    cursor.execute(
+        f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}'"
+    )
+    columns_with_types = dict(cursor.fetchall())
+    return columns_with_types

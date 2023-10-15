@@ -25,18 +25,24 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ tests ]
     steps:
-      - uses: actions/checkout@v3
-      - run: pipx install poetry
+      - uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry==1.6.1
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
           cache: "poetry"
-      - run: poetry install
 
-      - run: poetry build
-      - run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-      - run: poetry publish
+      - name: Install poetry dependencies
+        run: poetry install
 
-  docs:
-    needs: [ pypi ]
-    uses: ./.github/workflows/docs.yaml
+      - name: Build python package
+        run: poetry build
+
+      - name: Configure PyPi secrets
+        run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+
+      - name: Publish python package to PyPi
+        run: poetry publish

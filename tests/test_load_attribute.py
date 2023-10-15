@@ -51,7 +51,7 @@ def test_update(hnhm, cursor):
     class UserUpdate(UserWith1Key1Attribute):
         """UserUpdate."""
 
-        age = Integer(comment="User age", change_type=ChangeType.UPDATE)
+        age = Integer("User age", change_type=ChangeType.UPDATE)
 
     init_dwh(
         hnhm=hnhm,
@@ -103,7 +103,7 @@ def test_new__1key(hnhm, cursor):
     class UserNew(UserWith1Key1Attribute):
         """UserNew."""
 
-        age = Integer(comment="User age", change_type=ChangeType.NEW)
+        age = Integer("User age", change_type=ChangeType.NEW)
 
     init_dwh(
         hnhm=hnhm,
@@ -200,7 +200,7 @@ def test_new__2keys(hnhm, cursor):
     class UserNew(UserWith2Keys):
         """UserNew."""
 
-        age = Integer(comment="User age", change_type=ChangeType.NEW)
+        age = Integer("User age", change_type=ChangeType.NEW)
 
     init_dwh(
         hnhm=hnhm,
@@ -302,7 +302,7 @@ def test_new__2keys__duplicates(hnhm, cursor):
     class UserNew(UserWith2Keys):
         """UserNew."""
 
-        age = Integer(comment="User age", change_type=ChangeType.NEW)
+        age = Integer("User age", change_type=ChangeType.NEW)
 
     row = {"user_id": "0", "name": "mark", "age": 15, "time": TIME}
     expected = [

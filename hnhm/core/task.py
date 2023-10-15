@@ -86,7 +86,7 @@ class LoadLink(Task):
     priority: Priority = Priority.SECOND
     link: Link
     key_entities_names: list[str]
-    keys_mapping: dict[str, dict[Attribute, Attribute]]
+    keys_mapping: dict[str, dict[Attribute, Attribute]]  # type: ignore
 
     @property
     def id(self):

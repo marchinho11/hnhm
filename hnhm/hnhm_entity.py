@@ -6,7 +6,7 @@ from .core import Group, Entity, Layout, HnhmError, ChangeType, LayoutType
 
 
 class HnhmEntity(abc.ABC):
-    __layout__: Layout = None
+    __layout__: Layout | None = None
     __keys__: list[HnhmAttribute] | None = None
 
     def to_core(self) -> Entity:

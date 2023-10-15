@@ -24,56 +24,56 @@ class StageNoColumns(HnhmEntity):
 class StageWith1Column(StageNoColumns):
     """Stage with 1 column."""
 
-    user_id = String(comment="User ID", change_type=ChangeType.IGNORE)
+    user_id = String("User ID")
 
 
 class StageWith5Columns(StageWith1Column):
     """Stage with 5 columns."""
 
-    review_id = String(comment="Review ID", change_type=ChangeType.IGNORE)
-    name = String(comment="User name", change_type=ChangeType.IGNORE)
-    age = Integer(comment="User age", change_type=ChangeType.IGNORE)
-    time = Timestamp(comment="Time", change_type=ChangeType.IGNORE)
+    review_id = String("Review ID")
+    name = String("User name")
+    age = Integer("User age")
+    time = Timestamp("Time")
 
 
 class StageWith6Columns(StageWith5Columns):
     """Stage with 6 columns."""
 
-    new_id = String(comment="New ID", change_type=ChangeType.IGNORE)
+    new_id = String("New ID")
 
 
 class UserWith1Key(HnhmEntity):
     """User with 1 key."""
 
     __layout__ = Layout(name="user", type=LayoutType.HNHM)
-    user_id = String(comment="User ID", change_type=ChangeType.IGNORE)
+    user_id = String("User ID", change_type=ChangeType.IGNORE)
     __keys__ = [user_id]
 
 
 class UserWith2Keys(UserWith1Key):
     """User with 2 keys."""
 
-    user_id = String(comment="User ID", change_type=ChangeType.IGNORE)
-    name = String(comment="User name", change_type=ChangeType.IGNORE)
+    user_id = String("User ID", change_type=ChangeType.IGNORE)
+    name = String("User name", change_type=ChangeType.IGNORE)
     __keys__ = [user_id, name]
 
 
 class UserWith1Key1Attribute(UserWith1Key):
     """User with 1 key and 1 attribute."""
 
-    age = Integer(comment="User age", change_type=ChangeType.IGNORE)
+    age = Integer("User age", change_type=ChangeType.IGNORE)
 
 
 class UserWith1Key1Group(UserWith1Key):
     """User with 1 key and 1 group."""
 
     first_name = String(
-        comment="First name.",
+        "First name.",
         change_type=ChangeType.IGNORE,
         group="name",
     )
     last_name = String(
-        comment="Last name.",
+        "Last name.",
         change_type=ChangeType.IGNORE,
         group="name",
     )
@@ -83,7 +83,7 @@ class UserWith1Key1GroupExtraAttribute(UserWith1Key1Group):
     """User with 1 key and 1 group. Group have an extra attribute."""
 
     third_name = String(
-        comment="Third name.",
+        "Third name.",
         change_type=ChangeType.IGNORE,
         group="name",
     )
@@ -97,7 +97,7 @@ class ReviewWith1Key(HnhmEntity):
     """Review with 1 key."""
 
     __layout__ = Layout(name="review", type=LayoutType.HNHM)
-    review_id = String(comment="Review ID", change_type=ChangeType.IGNORE)
+    review_id = String("Review ID", change_type=ChangeType.IGNORE)
     __keys__ = [review_id]
 
 
@@ -105,8 +105,8 @@ class LinkUserReviewWith1Key(HnhmLink):
     """Link UserReview with 1 key."""
 
     __layout__ = Layout(name="user_review")
-    user = HnhmLinkElement(entity=UserWith1Key(), comment="User")
-    review = HnhmLinkElement(entity=ReviewWith1Key(), comment="Review")
+    user = HnhmLinkElement("User", entity=UserWith1Key())
+    review = HnhmLinkElement("Review", entity=ReviewWith1Key())
     __keys__ = [user]
 
 
@@ -114,8 +114,8 @@ class LinkUserReviewWith2Keys(HnhmLink):
     """Link UserReview with 2 keys."""
 
     __layout__ = Layout(name="user_review")
-    user = HnhmLinkElement(entity=UserWith1Key(), comment="User")
-    review = HnhmLinkElement(entity=ReviewWith1Key(), comment="Review")
+    user = HnhmLinkElement("User", entity=UserWith1Key())
+    review = HnhmLinkElement("Review", entity=ReviewWith1Key())
     __keys__ = [user, review]
 
 

@@ -8,16 +8,8 @@ from tests.util import TIME, TIME_INFINITY, md5, get_rows, init_dwh, insert_row
 class GroupIgnore(UserWith1Key):
     """Group Ignore."""
 
-    name = String(
-        comment="User name",
-        change_type=ChangeType.IGNORE,
-        group="user_data",
-    )
-    age = Integer(
-        comment="User age",
-        change_type=ChangeType.IGNORE,
-        group="user_data",
-    )
+    name = String("User name", change_type=ChangeType.IGNORE, group="user_data")
+    age = Integer("User age", change_type=ChangeType.IGNORE, group="user_data")
 
 
 def test_ignore(hnhm, cursor):
@@ -83,16 +75,8 @@ def test_ignore(hnhm, cursor):
 class GroupUpdate(UserWith1Key):
     """Group Update."""
 
-    name = String(
-        comment="User name",
-        change_type=ChangeType.UPDATE,
-        group="user_data",
-    )
-    age = Integer(
-        comment="User age",
-        change_type=ChangeType.UPDATE,
-        group="user_data",
-    )
+    name = String("User name", change_type=ChangeType.UPDATE, group="user_data")
+    age = Integer("User age", change_type=ChangeType.UPDATE, group="user_data")
 
 
 def test_update(hnhm, cursor):
@@ -166,16 +150,8 @@ def test_update(hnhm, cursor):
 class GroupNew(UserWith1Key):
     """Group New."""
 
-    name = String(
-        comment="User name",
-        change_type=ChangeType.NEW,
-        group="user_data",
-    )
-    age = Integer(
-        comment="User age",
-        change_type=ChangeType.NEW,
-        group="user_data",
-    )
+    name = String("User name", change_type=ChangeType.NEW, group="user_data")
+    age = Integer("User age", change_type=ChangeType.NEW, group="user_data")
 
 
 def test_new(hnhm, cursor):

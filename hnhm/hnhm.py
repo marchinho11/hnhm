@@ -26,7 +26,7 @@ class Plan(pydantic.BaseModel):
         return not self.entities_migrations and not self.links_migrations
 
     @property
-    def migrations_all(self):
+    def migrations_all(self) -> list[migration.Migration]:
         migrations: list[migration.Migration] = []
 
         for collection in self.entities_migrations.values():

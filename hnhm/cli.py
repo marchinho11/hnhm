@@ -14,7 +14,7 @@ def import_registry(module: str) -> HnhmRegistry:
             "Please, use the hnhm from the parent directory."
         )
 
-    module = module.rstrip("/").lstrip("/")
+    module = module.strip("/")
     module = f"{module}.__hnhm__"
 
     click.secho(
@@ -24,7 +24,7 @@ def import_registry(module: str) -> HnhmRegistry:
     click.secho()
     imported_module = importlib.import_module(module)
 
-    registry: HnhmRegistry = getattr(imported_module, "registry", None)
+    registry: HnhmRegistry | None = getattr(imported_module, "registry", None)
     if not registry:
         raise HnhmError(
             f"Failed to import registry from module: '{module}'."
