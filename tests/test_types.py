@@ -16,13 +16,11 @@ class Types(HnhmEntity):
     """Tests for different types."""
 
     __layout__ = Layout(name="types", type=LayoutType.HNHM)
-    string = String(comment="String", change_type=ChangeType.IGNORE)
-    float = Float(comment="Float", change_type=ChangeType.IGNORE, group="types")
-    integer = Integer(comment="Integer", change_type=ChangeType.IGNORE, group="types")
-    boolean = Boolean(comment="Boolean", change_type=ChangeType.IGNORE, group="types")
-    timestamp = Timestamp(
-        comment="Timestamp", change_type=ChangeType.IGNORE, group="types"
-    )
+    string = String("String", change_type=ChangeType.IGNORE)
+    float = Float("Float", change_type=ChangeType.IGNORE, group="types")
+    integer = Integer("Integer", change_type=ChangeType.IGNORE, group="types")
+    boolean = Boolean("Boolean", change_type=ChangeType.IGNORE, group="types")
+    timestamp = Timestamp("Timestamp", change_type=ChangeType.IGNORE, group="types")
     __keys__ = [string]
 
 

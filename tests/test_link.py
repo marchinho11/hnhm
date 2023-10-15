@@ -79,7 +79,7 @@ def test_not_enough_elements(hnhm):
         """NotEnoughElements."""
 
         __layout__ = Layout(name="not_enough_elements")
-        user = HnhmLinkElement(entity=UserWith1Key(), comment="User")
+        user = HnhmLinkElement("User", entity=UserWith1Key())
         __keys__ = [user]
 
     with pytest.raises(
@@ -97,8 +97,8 @@ def test_no_element_comment(hnhm):
         """NoElementComment."""
 
         __layout__ = Layout(name="no_element_comment")
-        user = HnhmLinkElement(entity=UserWith1Key(), comment="")
-        review = HnhmLinkElement(entity=ReviewWith1Key(), comment="Review")
+        user = HnhmLinkElement("", entity=UserWith1Key())
+        review = HnhmLinkElement("Review", entity=ReviewWith1Key())
         __keys__ = [user, review]
 
     with pytest.raises(
@@ -116,8 +116,8 @@ def test_element_not_hnhm(hnhm):
         """ElementNotHnhm."""
 
         __layout__ = Layout(name="element_not_hnhm")
-        user = HnhmLinkElement(entity=StageWith5Columns(), comment="User")
-        review = HnhmLinkElement(entity=ReviewWith1Key(), comment="Review")
+        user = HnhmLinkElement("User", entity=StageWith5Columns())
+        review = HnhmLinkElement("Review", entity=ReviewWith1Key())
         __keys__ = [user, review]
 
     with pytest.raises(

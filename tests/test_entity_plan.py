@@ -61,7 +61,7 @@ def test_no_keys_with_hnhm_layout(hnhm):
         """UserNoKeys."""
 
         __layout__ = Layout(name="user", type=LayoutType.HNHM)
-        user_id = String(comment="User ID", change_type=ChangeType.IGNORE)
+        user_id = String("User ID", change_type=ChangeType.IGNORE)
 
     with pytest.raises(HnhmError, match="At least one Key is required for entity "), hnhm:
         hnhm.plan(entities=[UserNoKeys()])
@@ -72,7 +72,7 @@ def test_wrong_key_change_type(hnhm):
         """UserWrongChangeType."""
 
         __layout__ = Layout(name="user", type=LayoutType.HNHM)
-        user_id = String(comment="User ID", change_type=ChangeType.NEW)
+        user_id = String("User ID", change_type=ChangeType.NEW)
         __keys__ = [user_id]
 
     with pytest.raises(
@@ -85,16 +85,8 @@ def test_different_group_change_types(hnhm):
     class UserDifferentGroupChangeTypes(UserWith1Key):
         """UserDifferentGroupChangeTypes."""
 
-        name = String(
-            comment="User name",
-            change_type=ChangeType.NEW,
-            group="user_data",
-        )
-        age = Integer(
-            comment="User age",
-            change_type=ChangeType.IGNORE,
-            group="user_data",
-        )
+        name = String("User name", change_type=ChangeType.NEW, group="user_data")
+        age = Integer("User age", change_type=ChangeType.IGNORE, group="user_data")
 
     with pytest.raises(
         HnhmError,
@@ -124,7 +116,7 @@ def test_with_attribute(hnhm):
     class UserWithAttribute(UserWith1Key):
         """UserWithName."""
 
-        name = String(comment="Name.", change_type=ChangeType.IGNORE)
+        name = String("Name.", change_type=ChangeType.IGNORE)
 
     with hnhm:
         plan = hnhm.plan(entities=[UserWithAttribute()])
@@ -141,7 +133,7 @@ def test_with_group(hnhm):
     class UserWithGroup(UserWith1Key):
         """UserWithGroup."""
 
-        name = String(comment="Name.", change_type=ChangeType.IGNORE, group="name")
+        name = String("Name.", change_type=ChangeType.IGNORE, group="name")
 
     with hnhm:
         plan = hnhm.plan(entities=[UserWithGroup()])
@@ -158,7 +150,7 @@ def test_update_view(hnhm):
     class UserWithGroup(UserWith1Key):
         """UserWithGroup."""
 
-        name = String(comment="Name.", change_type=ChangeType.IGNORE, group="name")
+        name = String("Name.", change_type=ChangeType.IGNORE, group="name")
 
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[UserWith1Key()]))
@@ -178,8 +170,8 @@ def test_remove(hnhm):
     class UserWithEverything(UserWith1Key):
         """UserWithEverything."""
 
-        age = Integer(comment="Age.", change_type=ChangeType.IGNORE)
-        name = String(comment="Name.", change_type=ChangeType.NEW, group="name")
+        age = Integer("Age.", change_type=ChangeType.IGNORE)
+        name = String("Name.", change_type=ChangeType.NEW, group="name")
 
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[UserWithEverything()]))

@@ -140,7 +140,7 @@ class User(HnhmEntity):
 
     __layout__ = Layout(name="user", type=LayoutType.HNHM)
 
-    user_id = String(comment="User ID.", change_type=ChangeType.IGNORE)
+    user_id = String("User ID.", change_type=ChangeType.IGNORE)
 
     __keys__ = [user_id]
 
@@ -212,10 +212,10 @@ class User(HnhmEntity):
 
     __layout__ = Layout(name="user", type=LayoutType.HNHM)
 
-    user_id = String(comment="User ID.", change_type=ChangeType.IGNORE)
-+   age = Integer(comment="Age.", change_type=ChangeType.UPDATE)
-+   first_name = String(comment="First name.", change_type=ChangeType.NEW, group="name")
-+   last_name = String(comment="Last name.", change_type=ChangeType.NEW, group="name")
+    user_id = String("User ID.", change_type=ChangeType.IGNORE)
++   age = Integer("Age.", change_type=ChangeType.UPDATE)
++   first_name = String("First name.", change_type=ChangeType.NEW, group="name")
++   last_name = String("Last name.", change_type=ChangeType.NEW, group="name")
 
     __keys__ = [user_id]
 
