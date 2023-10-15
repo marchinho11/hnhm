@@ -34,7 +34,16 @@ def test_composite_pk(hnhm, cursor):
     init_dwh(
         hnhm=hnhm,
         entities=[StageWith5Columns(), UserWith2Keys()],
-        stage_data={"stg__stage": [{"user_id": "0", "name": "Name", "time": TIME}]},
+        stage_data={
+            "stg__stage": [
+                {"user_id": "0", "name": "Name", "time": TIME},
+                {
+                    "user_id": None,
+                    "name": "Name",
+                    "time": TIME,
+                },  # one of business keys could be NULL
+            ]
+        },
         cursor=cursor,
     )
 
@@ -57,5 +66,12 @@ def test_composite_pk(hnhm, cursor):
             "name_bk": "Name",
             "valid_from": TIME,
             "_source": "stg__stage",
-        }
+        },
+        {
+            "user_sk": md5("NULL-Name"),
+            "user_id_bk": None,
+            "name_bk": "Name",
+            "valid_from": TIME,
+            "_source": "stg__stage",
+        },
     ]
