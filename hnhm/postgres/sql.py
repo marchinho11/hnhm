@@ -156,8 +156,7 @@ def generate_sql(
             keys_mapping=keys_mapping,
         ):
             source_keys = [key_source.name for key_source in keys_mapping.values()]
-            source_sk_components = (f"{key}::TEXT" for key in source_keys)
-            source_sk_components = "|| '-' ||".join(source_sk_components)
+            source_sk_components = "|| '-' ||".join(f"{key}::TEXT" for key in source_keys)
             source_sk = f"MD5({source_sk_components})"
 
             target_keys = [key.name for key in target.keys]
@@ -183,8 +182,7 @@ def generate_sql(
             source_table = f"stg__{source.name}"
 
             source_keys = [key_source.name for key_source in keys_mapping.values()]
-            source_sk_components = (f"{key}::TEXT" for key in source_keys)
-            source_sk_components = "|| '-' ||".join(source_sk_components)
+            source_sk_components = "|| '-' ||".join(f"{key}::TEXT" for key in source_keys)
             source_sk = f"MD5({source_sk_components})"
 
             source_attributes = [source_attribute.name]
@@ -227,8 +225,7 @@ def generate_sql(
             source_table = f"stg__{source.name}"
 
             source_keys = [key_source.name for key_source in keys_mapping.values()]
-            source_sk_components = (f"{key}::TEXT" for key in source_keys)
-            source_sk_components = "|| '-' ||".join(source_sk_components)
+            source_sk_components = "|| '-' ||".join(f"{key}::TEXT" for key in source_keys)
             source_sk = f"MD5({source_sk_components})"
 
             source_attributes = [
@@ -280,8 +277,9 @@ def generate_sql(
                 source_keys = [
                     key_source.name for key_source in entity_keys_mapping.values()
                 ]
-                source_sk_components = (f"{key}::TEXT" for key in source_keys)
-                source_sk_components = "|| '-' ||".join(source_sk_components)
+                source_sk_components = "|| '-' ||".join(
+                    f"{key}::TEXT" for key in source_keys
+                )
                 source_sk = f"MD5({source_sk_components})"
                 source_sks.append(source_sk)
 

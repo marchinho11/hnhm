@@ -81,13 +81,13 @@ class Flow:
                 )
 
         for link_name, link in self._links.items():
-            keys_mapping = {}
+            keys_mapping_link = {}
             depends_on = []
             key_entities_names = []
             for link_element in link.elements:
                 entity_name = link_element.entity.name
                 depends_on.append(hub_tasks[entity_name].id)
-                keys_mapping[entity_name] = self._entities_keys_mappings[entity_name]
+                keys_mapping_link[entity_name] = self._entities_keys_mappings[entity_name]
 
                 if link_element in link.keys:
                     key_entities_names.append(link_element.entity.name)
@@ -96,7 +96,7 @@ class Flow:
                 task.LoadLink(
                     source=self.source,
                     link=link,
-                    keys_mapping=keys_mapping,
+                    keys_mapping=keys_mapping_link,
                     key_entities_names=key_entities_names,
                     business_time_field=self.business_time_field,
                     depends_on=depends_on,
@@ -129,7 +129,7 @@ class Flow:
                     )
 
                 keys_mapping = {}
-                groups_mapping = {}
+                groups_mapping: dict[str, dict[Attribute, Attribute]] = {}
                 attributes_mapping = {}
                 for attribute_target, attribute_source in mapping.items():
                     attribute_target = attribute_target.to_core(target_entity.name)
