@@ -9,6 +9,7 @@ PG_TYPES = {
     Type.INTEGER: "INTEGER",
     Type.FLOAT: "DOUBLE PRECISION",
     Type.TIMESTAMP: "TIMESTAMPTZ",
+    Type.BOOLEAN: "BOOLEAN",
 }
 
 

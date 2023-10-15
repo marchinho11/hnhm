@@ -14,7 +14,7 @@ def import_registry(module: str) -> HnhmRegistry:
             "Please, use the hnhm from the parent directory."
         )
 
-    module = module.rstrip("/").lstrip("/")
+    module = module.strip("/")
     module = f"{module}.__hnhm__"
 
     click.secho(

@@ -10,6 +10,7 @@ class Type(str, Enum):
     INTEGER = "INTEGER"
     FLOAT = "FLOAT"
     TIMESTAMP = "TIMESTAMP"
+    BOOLEAN = "BOOLEAN"
 
     def __str__(self):
         return self.name

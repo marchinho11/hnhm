@@ -47,3 +47,7 @@ class Float(HnhmAttribute):
 
 class Timestamp(HnhmAttribute):
     type = Type.TIMESTAMP
+
+
+class Boolean(HnhmAttribute):
+    type = Type.BOOLEAN

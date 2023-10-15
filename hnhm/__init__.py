@@ -6,7 +6,7 @@ from .hnhm_registry import HnhmRegistry
 from .postgres.sql import PostgresPsycopgSql
 from .hnhm_link import HnhmLink, HnhmLinkElement
 from .hnhm_entity import Layout, HnhmEntity, LayoutType
-from .hnhm_attribute import Float, String, Integer, Timestamp, ChangeType
+from .hnhm_attribute import Float, String, Boolean, Integer, Timestamp, ChangeType
 
 __all__ = [
     "ChangeType",
@@ -25,4 +25,5 @@ __all__ = [
     "PostgresPsycopgSql",
     "String",
     "Timestamp",
+    "Boolean",
 ]
