@@ -9,3 +9,6 @@ lines:
 
 lines-all:
 	@poetry run pygount --format=summary --suffix=py hnhm/ tests/
+
+bump:
+	@poetry run bump-my-version bump patch
