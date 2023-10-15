@@ -45,6 +45,7 @@ Implementation of this package is based on report
 * [Future plans](#future-plans)
 * [Contribute!](#contribute)
 * [Documentation](#documentation)
+* [Created with](#created-with)
 
 
 ## Tutorial
@@ -336,3 +337,8 @@ What contributions are welcome? (**spoiler: any!**)
 
 ## Documentation
 https://marchinho11.github.io/hnhm
+
+## Created with
+| <img height="20" src="https://upload.wikimedia.org/wikipedia/commons/1/1d/PyCharm_Icon.svg"> PyCharm Professional |
+|-------------------------------------------------------------------------------------------------------------------|
+| <img height="20" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Neovim-mark.svg"> Neovim                |

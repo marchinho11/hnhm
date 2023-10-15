@@ -12,10 +12,10 @@ maintainers = ["Arseny Egorov <egoroff-ars@yandex.ru>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = "2.1.1"
-click = "8.1.6"
+pydantic = "2.4.2"
+click = "8.1.7"
 Jinja2 = "3.1.2"
-psycopg2-binary = "2.9.7"
+psycopg2-binary = "2.9.9"
 
 [tool.poetry.group.dev.dependencies]
 pydoc-markdown = "4.8.2"
