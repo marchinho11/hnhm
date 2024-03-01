@@ -9,12 +9,9 @@ jobs:
 
       - uses: psf/black@stable
         with:
-          version: "23.9.1"
+          version: "24.2.0"
 
       - uses: isort/isort-action@v1
         with:
-          isort-version: "5.12.0"
+          isort-version: "5.13.2"
 
-      - uses: chartboost/ruff-action@v1
-        with:
-          version: "0.0.292"

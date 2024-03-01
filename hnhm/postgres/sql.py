@@ -1,8 +1,8 @@
 import jinja2
-import psycopg2
+import psycopg
 
-from ..core.attribute import Type
-from ..core import Sql, HnhmError, ChangeType, LayoutType, task, migration
+from hnhm.core.attribute import Type
+from hnhm.core import Sql, HnhmError, ChangeType, LayoutType, task, migration
 
 PG_TYPES = {
     Type.STRING: "TEXT",
@@ -338,37 +338,26 @@ class PostgresPsycopgSql(Sql):
         return generate_sql(migration_or_task, self.jinja)
 
     def execute(self, sql: str):
-        connection = psycopg2.connect(
-            database=self.database,
+        with psycopg.connect(
+            dbname=self.database,
             user=self.user,
             password=self.password,
             port=self.port,
             host=self.host,
-        )
-        cursor = connection.cursor()
-
-        try:
-            cursor.execute(sql)
-            connection.commit()
-        except Exception as e:
-            raise e
-        finally:
-            cursor.close()
-            connection.close()
+        ) as conn:
+            conn.execute(sql)
+            conn.commit()
 
     def execute_many(self, sql: str, values: list):
-        connection = psycopg2.connect(
-            database=self.database,
-            user=self.user,
-            password=self.password,
-            port=self.port,
-            host=self.host,
-        )
-        cursor = connection.cursor()
-
-        try:
-            cursor.executemany(sql, values)
-            connection.commit()
-        finally:
-            cursor.close()
-            connection.close()
+        with (
+            psycopg.connect(
+                dbname=self.database,
+                user=self.user,
+                password=self.password,
+                port=self.port,
+                host=self.host,
+            ) as conn,
+            conn.cursor() as cur,
+        ):
+            cur.executemany(sql, values)
+            conn.commit()

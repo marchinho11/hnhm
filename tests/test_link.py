@@ -40,13 +40,16 @@ def test_no_doc(hnhm):
     class NoDoc(HnhmLink):
         __layout__ = Layout(name="no_doc")
 
-    with pytest.raises(
-        HnhmError,
-        match=(
-            "Doc not found or empty for link: 'no_doc'."
-            " Please, write a documentation for your link."
+    with (
+        pytest.raises(
+            HnhmError,
+            match=(
+                "Doc not found or empty for link: 'no_doc'."
+                " Please, write a documentation for your link."
+            ),
         ),
-    ), hnhm:
+        hnhm,
+    ):
         hnhm.plan(links=[NoDoc()])
 
 
@@ -64,13 +67,16 @@ def test_no_elements(hnhm):
 
         __layout__ = Layout(name="no_elements")
 
-    with pytest.raises(
-        HnhmError,
-        match=(
-            "At least one Key is required for 'no_elements'."
-            " Please, specify link's keys via the '__keys__' attribute."
+    with (
+        pytest.raises(
+            HnhmError,
+            match=(
+                "At least one Key is required for 'no_elements'."
+                " Please, specify link's keys via the '__keys__' attribute."
+            ),
         ),
-    ), hnhm:
+        hnhm,
+    ):
         hnhm.plan(links=[NoElements()])
 
 
@@ -82,13 +88,16 @@ def test_not_enough_elements(hnhm):
         user = HnhmLinkElement("User", entity=UserWith1Key())
         __keys__ = [user]
 
-    with pytest.raises(
-        HnhmError,
-        match=(
-            "At least two LinkElements are required for 'not_enough_elements'."
-            " Please, specify more than one elements."
+    with (
+        pytest.raises(
+            HnhmError,
+            match=(
+                "At least two LinkElements are required for 'not_enough_elements'."
+                " Please, specify more than one elements."
+            ),
         ),
-    ), hnhm:
+        hnhm,
+    ):
         hnhm.plan(links=[NotEnoughElements()])
 
 
@@ -101,13 +110,16 @@ def test_no_element_comment(hnhm):
         review = HnhmLinkElement("Review", entity=ReviewWith1Key())
         __keys__ = [user, review]
 
-    with pytest.raises(
-        HnhmError,
-        match=(
-            "Passed empty comment='' entity='user'."
-            " Please, provide a comment for each LinkElement."
+    with (
+        pytest.raises(
+            HnhmError,
+            match=(
+                "Passed empty comment='' entity='user'."
+                " Please, provide a comment for each LinkElement."
+            ),
         ),
-    ), hnhm:
+        hnhm,
+    ):
         hnhm.plan(links=[NoElementComment()])
 
 
@@ -120,13 +132,16 @@ def test_element_not_hnhm(hnhm):
         review = HnhmLinkElement("Review", entity=ReviewWith1Key())
         __keys__ = [user, review]
 
-    with pytest.raises(
-        HnhmError,
-        match=(
-            "Link doesn't support entities with LayoutType='STAGE'."
-            " Please, use elements with HNHM layout type."
+    with (
+        pytest.raises(
+            HnhmError,
+            match=(
+                "Link doesn't support entities with LayoutType='STAGE'."
+                " Please, use elements with HNHM layout type."
+            ),
         ),
-    ), hnhm:
+        hnhm,
+    ):
         hnhm.plan(links=[ElementNotHnhm()])
 
 

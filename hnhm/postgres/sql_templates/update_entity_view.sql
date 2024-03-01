@@ -18,7 +18,7 @@ LEFT JOIN
     {{ attribute.table }}
     ON {{ hub }}.{{ sk }} = {{ attribute.table }}.{{ sk }}
     {% if attribute.change_type == 'NEW' -%}
-        AND {{ attribute.table }}.valid_to = 'infinity'
+        AND {{ attribute.table }}.valid_to = '9999-12-31 00:00:00+00'
     {%- endif %}
 {%- endfor %}
 {% for group in groups -%}
@@ -26,6 +26,6 @@ LEFT JOIN
     {{ group.table }}
     ON {{ hub }}.{{ sk }} = {{ group.table }}.{{ sk }}
     {% if group.change_type == 'NEW' -%}
-        AND {{ group.table }}.valid_to = 'infinity'
+        AND {{ group.table }}.valid_to = '9999-12-31 00:00:00+00'
     {%- endif %}
 {%- endfor %}

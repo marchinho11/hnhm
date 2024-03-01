@@ -8,11 +8,14 @@ def test_no_doc(hnhm):
     class UserNoDoc(UserWith1Key):
         pass
 
-    with hnhm, pytest.raises(
-        HnhmError,
-        match=(
-            "Doc not found or empty for entity: 'HNHM.user'."
-            " Please, write a documentation for your entity."
+    with (
+        hnhm,
+        pytest.raises(
+            HnhmError,
+            match=(
+                "Doc not found or empty for entity: 'HNHM.user'."
+                " Please, write a documentation for your entity."
+            ),
         ),
     ):
         hnhm.plan(entities=[UserNoDoc()])
@@ -32,13 +35,16 @@ def test_no_layout_type(hnhm):
 
         __layout__ = Layout(name="user")
 
-    with pytest.raises(
-        HnhmError,
-        match=(
-            "Type for Layout '<Layout 'user' type='None'>' is required for entity."
-            " Please, specify LayoutType via 'type' attribute."
+    with (
+        pytest.raises(
+            HnhmError,
+            match=(
+                "Type for Layout '<Layout 'user' type='None'>' is required for entity."
+                " Please, specify LayoutType via 'type' attribute."
+            ),
         ),
-    ), hnhm:
+        hnhm,
+    ):
         hnhm.plan(entities=[UserNoLayoutType()])
 
 
@@ -75,9 +81,12 @@ def test_wrong_key_change_type(hnhm):
         user_id = String("User ID", change_type=ChangeType.NEW)
         __keys__ = [user_id]
 
-    with pytest.raises(
-        HnhmError, match="Change type='NEW' is not supported for Key attributes."
-    ), hnhm:
+    with (
+        pytest.raises(
+            HnhmError, match="Change type='NEW' is not supported for Key attributes."
+        ),
+        hnhm,
+    ):
         hnhm.plan(entities=[UserWrongChangeType()])
 
 
@@ -88,13 +97,16 @@ def test_different_group_change_types(hnhm):
         name = String("User name", change_type=ChangeType.NEW, group="user_data")
         age = Integer("User age", change_type=ChangeType.IGNORE, group="user_data")
 
-    with pytest.raises(
-        HnhmError,
-        match=(
-            "Found conflicting ChangeType for the entity='HNHM.user' group='user_data'."
-            " Please, use single ChangeType for all attributes within the same group."
+    with (
+        pytest.raises(
+            HnhmError,
+            match=(
+                "Found conflicting ChangeType for the entity='HNHM.user' group='user_data'."
+                " Please, use single ChangeType for all attributes within the same group."
+            ),
         ),
-    ), hnhm:
+        hnhm,
+    ):
         hnhm.plan(entities=[UserDifferentGroupChangeTypes()])
 
 

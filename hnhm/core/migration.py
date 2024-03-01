@@ -15,6 +15,7 @@ Remove Entity order:
     2. Remove Attribute, Group
     3. Remove Entity
 """
+
 import pydantic
 
 from .link import Link
