@@ -1,18 +1,14 @@
 .idea/
 .vscode/
-
 dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-**/__pycache__/*
-
+__pycache__/
 .coverage
 htmlcov/
-
 .env
-
+.DS_Store
 state.json
-coinmarket.json
+docs/notes.md
 
-docs/build

@@ -3,8 +3,8 @@ import random
 import string
 
 import pytest
-import psycopg2
-from psycopg2.extensions import cursor as Cursor
+import psycopg
+from psycopg import Cursor
 
 from hnhm.core.state import InMemState
 from hnhm import HnHm, PostgresPsycopgSql
@@ -25,18 +25,17 @@ def generate_random_db_name(size=16, chars=string.ascii_lowercase):
 def postgres_db() -> str:
     random_db_name = generate_random_db_name()
 
-    connection = psycopg2.connect(database=PG_DB, user=PG_USER, host=PG_HOST)
-    connection.autocommit = True
-
-    cursor = connection.cursor()
     try:
-        cursor.execute(f"CREATE DATABASE {random_db_name}")
+        with psycopg.connect(
+            dbname=PG_DB, user=PG_USER, host=PG_HOST, autocommit=True
+        ) as conn:
+            conn.execute(f"CREATE DATABASE {random_db_name}")
         yield random_db_name
     finally:
-        cursor.execute(f"DROP DATABASE IF EXISTS {random_db_name}")
-
-        cursor.close()
-        connection.close()
+        with psycopg.connect(
+            dbname=PG_DB, user=PG_USER, host=PG_HOST, autocommit=True
+        ) as conn:
+            conn.execute(f"DROP DATABASE IF EXISTS {random_db_name}")
 
 
 @pytest.fixture
@@ -52,11 +51,8 @@ def hnhm(postgres_db) -> HnHm:
 
 @pytest.fixture
 def cursor(postgres_db) -> Cursor:
-    connection = psycopg2.connect(database=postgres_db, user=PG_USER, host=PG_HOST)
-    connection.autocommit = True
-    cursor = connection.cursor()
-    try:
-        yield cursor
-    finally:
-        cursor.close()
-        connection.close()
+    with psycopg.connect(
+        dbname=postgres_db, user=PG_USER, host=PG_HOST, autocommit=True
+    ) as conn:
+        with conn.cursor() as cur:
+            yield cur

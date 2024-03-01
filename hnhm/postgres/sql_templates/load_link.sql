@@ -57,7 +57,7 @@ SELECT
     {% endfor -%}
     d1.valid_from,
     CASE
-        WHEN d2.valid_from IS NULL THEN 'infinity'
+        WHEN d2.valid_from IS NULL THEN '9999-12-31 00:00:00+00'
         ELSE d2.valid_from
     END AS valid_to,
     '{{ source_table }}' AS _source,

@@ -1,9 +1,6 @@
 # <img src="https://raw.githubusercontent.com/marchinho11/hnhm/main/docs/assets/logo.png" height="40px">
 [![codecov](https://codecov.io/gh/marchinho11/hnhm/branch/main/graph/badge.svg?token=PFB1111T2D)](https://codecov.io/gh/marchinho11/hnhm)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Downloads](https://static.pepy.tech/personalized-badge/hnhm?period=week&units=international_system&left_color=black&right_color=brightgreen&left_text=PyPi%20/%20week)](https://pepy.tech/project/hnhm)
-[![Downloads](https://static.pepy.tech/personalized-badge/hnhm?period=total&units=international_system&left_color=black&right_color=brightgreen&left_text=PyPi%20/%20total)](https://pepy.tech/project/hnhm)
-![Visitors](https://api.visitorbadge.io/api/combined?path=marchinho11%2Fhnhm&label=Visitors&labelColor=%23000000&countColor=%2347c21a&style=flat&labelStyle=none)
 
 **hNhM**(highly Normalized hybrid Model) – data modeling methodology that enables iterative and Agile-driven
  modifications to your Data Warehouse (DWH). The methodology is based on Anchor Modeling and Data Vault.
@@ -16,7 +13,7 @@ The idea is to represent each Entity using 3 types of tables:
   **The best practice is to define a Group by the same data source.**
 
 
-So, the purpose of `hnhm` is to:
+The purpose of `hnhm` is to:
 * **Define** Entities, Links and Flows *declaratively* using Python
   * Describe them "logically"
   * The "physical" layer is managed by `hnhm`
@@ -42,9 +39,6 @@ Implementation of this package is based on report
   + [Physical level (Tables)](#physical-level-tables)
   + [Change types of Attributes and Groups](#change-types-of-attributes-and-groups)
 * [Supported Databases](#supported-databases)
-* [Future plans](#future-plans)
-* [Contribute!](#contribute)
-* [Created with](#created-with)
 
 
 ## Tutorial
@@ -292,46 +286,4 @@ view: entity__user
 
 ## Supported Databases
 - [x] Postgres
-- [ ] GreenPlum
-- [ ] Snowflake
-- [ ] BigQuery
-- [ ] ClickHouse
 
-
-## Future plans
-* New database connectors
-  * Snowflake
-  * BigQuery
-  * GreenPlum
-  * (?) ClickHouse
-* Tests
-  * More elegant DSL
-* State management
-  * Keep history in the database
-  * Refresh: drift detection
-  * Rollback
-  * Generate static documentation for DWH
-* Robustness
-  * Reliability
-  * Benchmarks
-  * SQL optimization, refinement of Jinja code
-* Documentation
-  * Documentation for Python sources
-  * Guides, best practices, and recipes
-* Code Style & CI
-  * Testing matrix
-
-## Contribute!
-What contributions are welcome? (**spoiler: any!**)
-- New database connectors
-- New features
-- Typos correction
-- Dependencies update
-- Documentation improvement
-- Code refinement
-- Bug fixes
-
-## Created with
-| <img height="20" src="https://upload.wikimedia.org/wikipedia/commons/1/1d/PyCharm_Icon.svg"> PyCharm Professional |
-|-------------------------------------------------------------------------------------------------------------------|
-| <img height="20" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Neovim-mark.svg"> Neovim                |

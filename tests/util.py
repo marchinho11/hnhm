@@ -1,8 +1,5 @@
 import hashlib
-from datetime import datetime, timezone
-
-from psycopg2.extensions import AsIs
-from psycopg2.extensions import cursor as Cursor
+from datetime import date, datetime, timezone
 
 from hnhm import HnHm, HnhmLink, HnhmEntity
 
@@ -21,10 +18,10 @@ TIME_INFINITY = datetime(
     year=9999,
     month=12,
     day=31,
-    hour=23,
-    minute=59,
-    second=59,
-    microsecond=999999,
+    hour=0,
+    minute=0,
+    second=0,
+    microsecond=0,
     tzinfo=timezone.utc,
 )
 
@@ -34,13 +31,10 @@ def md5(*s) -> str:
 
 
 def insert_row(table: str, row: dict, cursor):
-    columns = ",".join(row.keys())
-    values = tuple(row.values())
-
-    cursor.execute(
-        f"INSERT INTO {table}(%s) values %s",
-        (AsIs(columns), values),
-    )
+    columns, values = zip(*row.items())
+    placeholder = ["%s" for _ in columns]
+    sql = f"INSERT INTO {table}({', '.join(columns)}) values ({', '.join(placeholder)})"
+    cursor.execute(sql, values)
 
 
 def get_rows(
@@ -82,7 +76,7 @@ def init_dwh(
             insert_row(stage_table_name, row, cursor)
 
 
-def get_tables(cursor: Cursor) -> set[str]:
+def get_tables(cursor) -> set[str]:
     cursor.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public'")
     tables = cursor.fetchall()
     tables = set(t[0] for t in tables)
@@ -90,14 +84,14 @@ def get_tables(cursor: Cursor) -> set[str]:
     return tables
 
 
-def get_views(cursor: Cursor) -> set[str]:
+def get_views(cursor) -> set[str]:
     cursor.execute("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname='public'")
     views = cursor.fetchall()
     views = set(t[0] for t in views)
     return views
 
 
-def get_columns(table: str, cursor: Cursor) -> set[str]:
+def get_columns(table: str, cursor) -> set[str]:
     cursor.execute(
         f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}'"
     )
@@ -106,7 +100,7 @@ def get_columns(table: str, cursor: Cursor) -> set[str]:
     return columns
 
 
-def get_columns_with_types(table: str, cursor: Cursor) -> dict[str, str]:
+def get_columns_with_types(table: str, cursor) -> dict[str, str]:
     cursor.execute(
         f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}'"
     )

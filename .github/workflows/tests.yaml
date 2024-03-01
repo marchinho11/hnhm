@@ -15,7 +15,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16.2
         env:
           POSTGRES_DB: ${{ env.PG_DB }}
           POSTGRES_USER: ${{ env.PG_USER }}
@@ -32,9 +32,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install poetry
-        run: pipx install poetry==1.6.1
+        run: pipx install poetry==1.8.1
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "poetry"
@@ -48,7 +48,7 @@ jobs:
           PG_DB: ${{ env.PG_DB }}
           PG_USER: ${{ env.PG_USER }}
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.codecov_token }}
           files: ./coverage.xml

@@ -11,9 +11,12 @@ from tests.__hnhm__ import (
 
 
 def test_plan_at_least_one_attribute(hnhm):
-    with pytest.raises(
-        HnhmError, match="Entity='STAGE.stage' should have at least 1 attribute."
-    ), hnhm:
+    with (
+        pytest.raises(
+            HnhmError, match="Entity='STAGE.stage' should have at least 1 attribute."
+        ),
+        hnhm,
+    ):
         hnhm.plan(entities=[StageNoColumns()])
 
 
@@ -77,7 +80,10 @@ def test_try_remove_all_columns(hnhm):
     with hnhm:
         hnhm.apply(hnhm.plan(entities=[StageWith5Columns()]))
 
-    with pytest.raises(
-        HnhmError, match="Entity='STAGE.stage' should have at least 1 attribute."
-    ), hnhm:
+    with (
+        pytest.raises(
+            HnhmError, match="Entity='STAGE.stage' should have at least 1 attribute."
+        ),
+        hnhm,
+    ):
         hnhm.apply(hnhm.plan(entities=[StageNoColumns()]))
